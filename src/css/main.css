@@ -2,18 +2,61 @@ body {
 	background-color: #ecf0f1;
 	margin: 0;
 	padding: 0;
-	font-family: Lato, Helvetica, Arial, sans-serif;
-	font-weight: 400;
-	font-size: 14px;
+	font-family: 'Lato', Arial, sans-serif;
+	font-weight: 300;
+	font-size: 20px;
 	color: #393939;
 	text-rendering: optimizeLegibility;
 }
+
+a {
+	color: inherit;
+}
+a.clearly-a-link {
+	color: #07C;
+}
+a:hover {
+	color: inherit;
+	text-decoration: none;
+}
+a.clearly-a-link:hover {
+	color: #07C;
+	text-decoration: none;
+	opacity: 0.6;
+}
+a:focus {
+	color: inherit;
+	text-decoration: none;
+}
+a.clearly-a-link:focus {
+	color: #07C;
+	text-decoration: none;
+}
+a:visited {
+	
+}
+a.clearly-a-link:visited {
+	color: #005999;
+	text-decoration: none;
+}
+
+
+
+::selection {
+	background: #92a8ad;
+}
+::-moz-selection {
+	background: #92a8ad;
+}
+
+.italicize {
+	font-style: italic;
+}
  
 .wrapper {
-	width: 960px;
+	max-width: 960px;
 	background-color: #ecf0f1;
 	margin: 0 auto;
-	height: 6000px;
 }
 
 .welcome-nav {
@@ -66,7 +109,7 @@ body {
 }
 
 #content {
-	text-align: center;
+	margin-top: 50px;
 }
 
 #footer {
@@ -80,29 +123,39 @@ body {
 }
 
 .fill {
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-	background-attachment: fixed;
-	background-position: center;
-	-webkit-background-size: cover;
-	-moz-background-size: cover;
-	-o-background-size: cover;
+	height: 100vh;
+	background-image: url(../images/background.JPG);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 	background-size: cover;
-	background-color: #2ecc71;
 }
 
-#signature {
-	padding-top: 50px;
-	width:100%;
+.splash-arrow
+{
+	position: absolute;
+	top: 94vh;
+	color: #fff;
+	-webkit-text-stroke-width: 2px;
+	-webkit-text-stroke-color: #000;
+}
+.splash-arrow:hover
+{
+	cursor: pointer;
+	opacity: 0.6;
 }
 
-@media only screen 
-  and (min-device-width: 768px) 
-  and (max-device-width: 1024px) .splash-page-info {
-	height: 400px;
+.align-center {
+	text-align: center;
 }
 
+.text-half {
+	font-size: 0.5em;
+}
+.text-1 {
+	font-size: 1em;
+}
 .text-2 {
 	font-size: 2em;
 }
@@ -118,20 +171,166 @@ body {
 	filter: drop-shadow( 3px 3px 2px rgba(0,0,0,.7) );
 }
 
+.section {
+	margin-bottom: 50px;
+}
+
 .section-header {
 	text-align: left;
 }
 
 .section-contents {
 	text-align: left;
+	padding: 0 15px;
+	border-top: 3px solid;
+	padding-top: 10px;
+	margin-top: 10px;
 }
 
-.about-image {
-	width: 100px;
-	background-color: #1D7F47;
-	border-radius: 50px;
+.section-paragraph {
+	line-height: 2;
+}
+
+.section-paragraph .text-2 {
+	line-height: 1;
 }
 
 .td-inline-block {
 	display: inline-block;
+}
+
+.float-right {
+	float: right;
+}
+
+.justify {
+	text-align: justify;
+}
+
+.portrait {
+	width: auto;
+	height: 100%;
+	display: block;
+	margin: 0 auto;
+	/* padding added to compensate for navigation bar */
+	padding-bottom: 97px;
+}
+
+.signature {
+	height: 100%;
+	width: 100%;
+}
+
+.td-form-control {
+	height: 40px;
+	background-color: transparent;
+	border: 1px solid #2c3e50;
+	width: 100%;
+	font-size: 14px;
+}
+input[type="text"].td-form-control  {
+	padding: 10px;
+}
+textarea.td-form-control {
+    min-height: 80px;
+    padding: 10px;
+}
+.td-form-label {
+	font-weight: normal;
+}
+.td-form-group {
+	margin-bottom: 20px;
+}
+.td-form-button {
+	float: right;
+    background-color: transparent;
+    border: 1px solid #2c3e50;
+    height: 40px;
+    padding: 0 20px;
+    transition: background-color 0.2s linear;
+}
+.td-form-button:hover {
+    background-color: #C5CCD1;
+}
+
+::-webkit-input-placeholder {
+   font-size: 14px;
+}
+
+:-moz-placeholder {
+   font-size: 14px; 
+}
+
+::-moz-placeholder {
+   font-size: 14px; 
+}
+
+:-ms-input-placeholder {  
+   font-size: 14px; 
+}
+
+.captcha {
+	display: inline-block;
+}
+
+.header-icons {
+	padding: 11px 0;
+}
+
+.social-icon {
+	transition: all 0.2s linear;
+}
+.social-icon:hover {
+	opacity: 0.5;
+}
+.social-icon ~ .social-icon {
+	padding-left: 10px;
+}
+
+.footer {
+	background-color: #c2ced1;
+	margin: 0;
+	text-align: center;
+	padding: 15px;
+}
+.footer .fa {
+	font-size: 1.5em;
+	padding: 5px;
+}
+
+.h1-page-headers {
+	display: inline;
+}
+
+.project-image {
+	width: 100%;
+}
+
+.display-block {
+	display: block;
+}
+
+/* signature animation */
+path,
+line {
+  fill: none;
+  stroke: #2a3745;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-miterlimit: 10;
+}
+
+.stroke-main {
+	stroke-dasharray: 6000;
+	animation: draw-main 2s linear;
+}
+
+@keyframes draw-main {
+    0% {
+        stroke-dashoffset: 6000;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
 }
