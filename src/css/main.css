@@ -54,8 +54,8 @@ a.clearly-a-link:visited {
 }
  
 .wrapper {
-	max-width: 960px;
 	background-color: #ecf0f1;
+	padding: 20px;
 	margin: 0 auto;
 }
 
@@ -315,7 +315,7 @@ path,
 line {
   fill: none;
   stroke: #2a3745;
-  stroke-width: 3;
+  stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-miterlimit: 10;
@@ -333,4 +333,8 @@ line {
     100% {
         stroke-dashoffset: 0;
     }
+}
+
+.signature-padding {
+	padding: 100px;
 }

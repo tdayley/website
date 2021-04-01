@@ -4,7 +4,7 @@ import {ReactComponent as Signature } from '../images/signature.svg'
 const Header = () => {
     return (
         <div className="fill">
-            <Signature />
+            <Signature className='signature-padding' />
             <Icon name='arrow down' size='big' className='splash-arrow' />
         </div>
     )
