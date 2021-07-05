@@ -23,12 +23,15 @@ const Body = () => {
 							<Item.Header as="a" href="https://github.com/tdayley/Pebble" target="_blank" rel="noreferrer">
 								Pebble Watchface
 							</Item.Header>
+							<Item.Meta content="2016" />
 							<Item.Extra>
-								<Label icon="ban" content="deprecated" />
+								<Label icon="ban" content="Deprecated" />
+								<Label icon="code" content="C" />
+								<Label icon="js" content="JavaScript" />
 							</Item.Extra>
 							<Item.Description>
 								<p className="section-paragraph">
-									A Pebble watchface for the original Pebble Steel. It uses the <a href="https://openweathermap.org/" target="_blank" rel="noreferrer" className="clearly-a-link">OpenWeatherMap API</a> to display an up to date (synced every 5 minutes) temperature right on your watchface. Also created a custom time display that shows the date, time, and battery. This is a lot of random text that I am using to test whether adding a lot of text would make this set up look weird or not.
+									A Pebble watchface for the original Pebble Steel. It uses the <a href="https://openweathermap.org/" target="_blank" rel="noreferrer" className="clearly-a-link">OpenWeatherMap API</a> to display an up to date temperature right on your watchface. Also created a custom time display that shows the date, time, and battery. This is a lot of random text that I am using to test whether adding a lot of text would make this set up look weird or not.
 								</p>
 							</Item.Description>
 						</Item.Content>
@@ -39,8 +42,13 @@ const Body = () => {
 							<Item.Header as="a" href="https://github.com/tdayley/AreTheyGood" target="_blank" rel="noreferrer">
 								Are they good...
 							</Item.Header>
+							<Item.Meta content="2017" />
 							<Item.Extra>
-								<Label icon="ban" content="deprecated" />
+								<Label icon="ban" content="Deprecated" />
+								<Label icon="php" content="PHP" />
+								<Label icon="html5" content="HTML" />
+								<Label icon="css3 alternate" content="CSS" />
+								<Label icon="js" content="JavaScript" />
 							</Item.Extra>
 							<Item.Description>
 								<p className="section-paragraph">

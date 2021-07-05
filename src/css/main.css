@@ -98,10 +98,27 @@ body {
   color: #fff;
   -webkit-text-stroke-width: 2px;
   -webkit-text-stroke-color: #000;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
 }
 .splash-arrow:hover {
   cursor: pointer;
   opacity: 0.6;
+}
+.bounce {
+  animation-name: bounce;
+  animation-timing-function: ease;
+}
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-100px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .align-center {
@@ -267,35 +284,6 @@ textarea.td-form-control {
 
 .display-block {
   display: block;
-}
-
-/* signature animation */
-path,
-line {
-  fill: none;
-  stroke: #2a3745;
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-miterlimit: 10;
-}
-
-.stroke-main {
-  stroke-dasharray: 6000;
-  animation: draw-main 2s linear;
-}
-
-@keyframes draw-main {
-  0% {
-    stroke-dashoffset: 6000;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-.signature-padding {
-  padding: 100px;
 }
 
 .margin-bottom-50 {

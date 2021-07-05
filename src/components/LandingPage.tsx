@@ -1,11 +1,11 @@
-import { Icon } from 'semantic-ui-react';
-import { ReactComponent as Signature } from '../images/signature.svg';
+import { Icon, Image } from 'semantic-ui-react';
+import signature from '../images/Signature_v2.png';
 
 const Header = () => {
 	return (
 		<div className="fill">
-			<Signature className="signature-padding" />
-			<Icon name="arrow down" size="big" className="splash-arrow" />
+			<Image src={signature} center size="huge" />
+			<Icon name="arrow down" size="big" className="splash-arrow bounce" />
 		</div>
 	);
 };
