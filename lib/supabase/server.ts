@@ -37,7 +37,7 @@ export async function createClient() {
 
 // Only allow redirects to paths on this site, e.g. "/gifts", never "//evil.com".
 export function safeNextPath(next: string | null | undefined, fallback = '/gifts') {
-	if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) {
+	if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\') || /[\x00-\x1f\x7f]/.test(next)) {
 		return fallback;
 	}
 	return next;

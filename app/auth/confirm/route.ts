@@ -23,16 +23,11 @@ export async function GET(request: NextRequest) {
 		ok = !error;
 	}
 
-	const target = request.nextUrl.clone();
-	target.search = '';
-	if (ok) {
-		target.pathname = next.split('?')[0];
-		target.search = next.includes('?') ? next.slice(next.indexOf('?')) : '';
-	} else {
-		target.pathname = '/gifts/login';
-		target.searchParams.set('error', 'link');
-	}
-	const response = NextResponse.redirect(target);
+	const location = ok ? next : '/gifts/login?error=link';
+	// Send only the path, so the browser stays on the domain it used. Behind Amplify,
+	// the server sees requests as localhost:3000, so a full URL built from the request
+	// would send people there.
+	const response = new NextResponse(null, { status: 303, headers: { Location: location } });
 	if (ok) {
 		response.cookies.delete(NEXT_COOKIE);
 	}
