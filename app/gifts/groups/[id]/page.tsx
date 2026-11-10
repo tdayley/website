@@ -94,12 +94,15 @@ export default async function GroupPage({ params, searchParams }: Props) {
 				<h3 className="ui header">
 					Members <span className="ui circular label">{members.length}</span>
 				</h3>
+				<p>Pick a name to see their wish list.</p>
 				<div className="ui relaxed divided list">
 					{members.map((m) => (
 						<div className="item" key={m.user_id}>
 							<i aria-hidden="true" className="user circle icon"></i>
 							<div className="content">
-								{m.profiles?.display_name ?? 'Unknown'}
+								<Link href={m.user_id === me ? '/gifts/wishlist' : `/gifts/lists/${m.user_id}`}>
+									{m.profiles?.display_name ?? 'Unknown'}
+								</Link>
 								{m.user_id === me ? ' (you)' : null}
 								{m.role === 'organizer' ? (
 									<span className="ui tiny basic label" style={{ marginLeft: '0.5em' }}>

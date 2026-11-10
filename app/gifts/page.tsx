@@ -60,6 +60,13 @@ export default async function GiftsHome({ searchParams }: Props) {
 					</div>
 				) : null}
 
+				<p className="margin-bottom-50">
+					<Link className="ui button" href="/gifts/wishlist">
+						<i aria-hidden="true" className="list alternate outline icon"></i>
+						My wish list
+					</Link>
+				</p>
+
 				<h3 className="ui header">Your exchanges</h3>
 				{exchanges.length === 0 ? (
 					<p>You&apos;re not in any exchanges yet. Create one, or open the invite link someone sent you.</p>
