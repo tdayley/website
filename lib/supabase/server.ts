@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+// Where to send someone after they sign in, if the sign-in link doesn't say.
+export const NEXT_COOKIE = 'gifts_next';
+
 export function supabaseEnv() {
 	const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 	const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -34,7 +37,7 @@ export async function createClient() {
 
 // Only allow redirects to paths on this site, e.g. "/gifts", never "//evil.com".
 export function safeNextPath(next: string | null | undefined, fallback = '/gifts') {
-	if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) {
+	if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\') || /[\x00-\x1f\x7f]/.test(next)) {
 		return fallback;
 	}
 	return next;
