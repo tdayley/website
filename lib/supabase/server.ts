@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+// Where to send someone after they sign in, if the sign-in link doesn't say.
+export const NEXT_COOKIE = 'gifts_next';
+
 export function supabaseEnv() {
 	const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 	const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

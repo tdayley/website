@@ -1,13 +1,13 @@
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient, safeNextPath } from '@/lib/supabase/server';
+import { NEXT_COOKIE, createClient, safeNextPath } from '@/lib/supabase/server';
 
 // Magic links land here. Handles both link styles Supabase can send:
 //   ?token_hash=...&type=email   (works even if the link is opened on another device)
 //   ?code=...                    (Supabase's default; must be opened in the same browser)
 export async function GET(request: NextRequest) {
 	const params = request.nextUrl.searchParams;
-	const next = safeNextPath(params.get('next'));
+	const next = safeNextPath(params.get('next') ?? request.cookies.get(NEXT_COOKIE)?.value);
 	const tokenHash = params.get('token_hash');
 	const type = params.get('type') as EmailOtpType | null;
 	const code = params.get('code');
@@ -32,5 +32,9 @@ export async function GET(request: NextRequest) {
 		target.pathname = '/gifts/login';
 		target.searchParams.set('error', 'link');
 	}
-	return NextResponse.redirect(target);
+	const response = NextResponse.redirect(target);
+	if (ok) {
+		response.cookies.delete(NEXT_COOKIE);
+	}
+	return response;
 }

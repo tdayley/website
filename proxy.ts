@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { supabaseEnv } from '@/lib/supabase/server';
+import { NEXT_COOKIE, supabaseEnv } from '@/lib/supabase/server';
 
 // Runs before every /gifts request: refreshes the Supabase session cookie and
 // sends signed-out visitors to the login page.
@@ -31,7 +31,17 @@ export async function proxy(request: NextRequest) {
 		login.pathname = '/gifts/login';
 		login.search = '';
 		login.searchParams.set('next', path + request.nextUrl.search);
-		return NextResponse.redirect(login);
+		const redirect = NextResponse.redirect(login);
+		// Also remember the page in a cookie: the sign-in email's link may not carry
+		// "next" (e.g. a custom email template), and /auth/confirm falls back to this.
+		redirect.cookies.set(NEXT_COOKIE, path + request.nextUrl.search, {
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: request.nextUrl.protocol === 'https:',
+			path: '/',
+			maxAge: 60 * 60,
+		});
+		return redirect;
 	}
 
 	return response;

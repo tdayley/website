@@ -43,6 +43,15 @@ select public.join_group((select invite_code from g));
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000d',false);
 insert into public.wishlist_items (title) values ('Outsider item');
 
+-- Invite preview
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000d',false);
+select pg_temp.check((select group_name from public.invite_info((select invite_code from g))) = 'Family 2026', 'outsider sees group name via invite code');
+select pg_temp.check((select organizer_name from public.invite_info((select invite_code from g))) = 'alice', 'invite shows organizer name');
+select pg_temp.check((select not already_member from public.invite_info((select invite_code from g))), 'invite says outsider is not yet a member');
+select pg_temp.check((select count(*) from public.invite_info('wrong-code')) = 0, 'wrong invite code returns nothing');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
+select pg_temp.check((select already_member from public.invite_info((select invite_code from g))), 'invite says member is already in');
+
 -- Visibility
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
 select pg_temp.check((select count(*) from public.groups) = 1, 'member sees the group');
@@ -107,4 +116,5 @@ set role anon;
 select set_config('request.jwt.claim.sub','',false);
 select pg_temp.check((select count(*) from public.profiles) + (select count(*) from public.groups) + (select count(*) from public.wishlist_items) + (select count(*) from public.assignments) = 0, 'signed-out visitor sees nothing');
 select pg_temp.denied($$select public.join_group('x')$$, 'signed-out visitor calls join_group');
+select pg_temp.denied($$select * from public.invite_info('x')$$, 'signed-out visitor calls invite_info');
 \echo ALL TESTS PASSED
