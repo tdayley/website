@@ -100,7 +100,8 @@ export default async function MyWishlist({ searchParams }: Props) {
 					</div>
 				) : null}
 				<form className="ui form" action={addItem}>
-					<ItemFields />
+					{/* The key resets the form's picture preview and hints after each add or removal. */}
+					<ItemFields key={items.length} />
 					<button className="ui primary button" type="submit">
 						Add to my list
 					</button>

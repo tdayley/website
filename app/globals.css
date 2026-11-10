@@ -309,3 +309,31 @@ textarea.td-form-control {
 .wishlist-item .extra form {
   display: inline-block;
 }
+.field-hint {
+  font-size: 14px;
+  color: #5f6b72;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.field-hint summary {
+  cursor: pointer;
+  color: #4183c4;
+}
+.field-hint ol {
+  padding-left: 1.4em;
+}
+.field-hint li {
+  margin-bottom: 0.5em;
+}
+.image-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.image-field-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex: none;
+}
