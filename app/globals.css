@@ -297,3 +297,15 @@ textarea.td-form-control {
 .right-sided-image {
   padding-left: 20px;
 }
+
+/* Gift exchange wish lists */
+.wishlist-notes {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.wishlist-item .header {
+  overflow-wrap: anywhere;
+}
+.wishlist-item .extra form {
+  display: inline-block;
+}
