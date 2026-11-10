@@ -46,3 +46,67 @@ export async function joinGroup(formData: FormData) {
 	}
 	redirect(`/gifts/groups/${data}?joined=1`);
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function groupIdFrom(formData: FormData) {
+	const groupId = String(formData.get('group_id') ?? '');
+	if (!UUID.test(groupId)) redirect('/gifts');
+	return groupId;
+}
+
+// The database decides who may do these (organizer only, before the draw);
+// these actions just pass the request along and report what happened.
+
+export async function addExclusion(formData: FormData) {
+	const groupId = groupIdFrom(formData);
+	const a = String(formData.get('user_a') ?? '');
+	const b = String(formData.get('user_b') ?? '');
+	const back = (query: string) => redirect(`/gifts/groups/${groupId}?${query}#draw`);
+
+	if (!UUID.test(a) || !UUID.test(b)) back('error=pick');
+	if (a === b) back('error=same');
+
+	const supabase = await createClient();
+	const { error } = await supabase.from('exclusions').insert({ group_id: groupId, user_a: a, user_b: b });
+	if (error) {
+		if (error.code === '23505') back('error=duplicate');
+		console.error('addExclusion failed:', error.message);
+		back('error=exclusion');
+	}
+	back('notice=excluded');
+}
+
+export async function removeExclusion(formData: FormData) {
+	const groupId = groupIdFrom(formData);
+	const id = String(formData.get('id') ?? '');
+	const supabase = await createClient();
+	if (UUID.test(id)) {
+		const { error } = await supabase.from('exclusions').delete().eq('id', id).eq('group_id', groupId);
+		if (error) console.error('removeExclusion failed:', error.message);
+	}
+	redirect(`/gifts/groups/${groupId}#draw`);
+}
+
+export async function runDraw(formData: FormData) {
+	const groupId = groupIdFrom(formData);
+	const supabase = await createClient();
+	const { error } = await supabase.rpc('run_draw', { gid: groupId });
+	if (error) {
+		console.error('runDraw failed:', error.message);
+		const reason = /No valid draw/.test(error.message) ? 'impossible' : /At least 3/.test(error.message) ? 'few' : 'draw';
+		redirect(`/gifts/groups/${groupId}?error=${reason}#draw`);
+	}
+	redirect(`/gifts/groups/${groupId}?notice=drawn`);
+}
+
+export async function resetDraw(formData: FormData) {
+	const groupId = groupIdFrom(formData);
+	const supabase = await createClient();
+	const { error } = await supabase.rpc('reset_draw', { gid: groupId });
+	if (error) {
+		console.error('resetDraw failed:', error.message);
+		redirect(`/gifts/groups/${groupId}?error=reset#draw`);
+	}
+	redirect(`/gifts/groups/${groupId}?notice=reset#draw`);
+}

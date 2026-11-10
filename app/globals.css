@@ -337,3 +337,21 @@ textarea.td-form-control {
   border-radius: 4px;
   flex: none;
 }
+
+/* Gift exchange draw */
+.assignment-card.ui.segment {
+  padding: 1.5em 1em;
+}
+.assignment-name {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0.2em 0 0.6em;
+  overflow-wrap: anywhere;
+}
+.exclusion-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
