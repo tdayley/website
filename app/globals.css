@@ -84,7 +84,7 @@ body {
 
 .fill {
   height: 100vh;
-  background-image: url(../images/background.JPG);
+  background-image: url(/images/background.JPG);
   display: flex;
   flex-direction: column;
   align-items: center;
