@@ -1,65 +1,71 @@
 import Title from './Title';
-import { Container, Item, Label } from 'semantic-ui-react';
-import { ReactComponent as PebbleWatchface } from '../images/pebble.svg';
-import areTheyGoodLogo from '../images/aretheygoodlogo.png'
+
+const Label = ({ icon, content }: { icon: string; content: string }) => (
+	<div className="ui label">
+		<i aria-hidden="true" className={`${icon} icon`}></i>
+		{content}
+	</div>
+);
 
 const Body = () => {
 	return (
 		<div className="wrapper">
-			<Container text textAlign='justified' className="margin-bottom-50">
+			<div className="ui text justified container margin-bottom-50">
 				<Title name="about" iconName="info circle" />
 				<p className="section-paragraph">
 					A web developer	with a passion for creating cutting-edge sites and stunning designs. When away from the computer, you can either find me enjoying the outdoors kayaking or planning my next hike. Feel free to send <a href="mailto:tdayley@gmail.com">me</a> an email should you have any questions or want to connect!
 				</p>
-			</Container>
-			<Container text textAlign='justified' className="margin-bottom-50">
+			</div>
+			<div className="ui text justified container margin-bottom-50">
 				<Title name="projects" iconName="clipboard list" />
-				<Item.Group>
-					<Item>
-						<Item.Image size="medium">
-							<PebbleWatchface />
-						</Item.Image>
-						<Item.Content>
-							<Item.Header as="a" href="https://github.com/tdayley/Pebble" target="_blank" rel="noreferrer">
+				<div className="ui items">
+					<div className="item">
+						<div className="ui medium image">
+							<img src="/images/pebble.svg" alt="Pebble watchface" />
+						</div>
+						<div className="content">
+							<a className="header" href="https://github.com/tdayley/Pebble" target="_blank" rel="noreferrer">
 								Pebble Watchface
-							</Item.Header>
-							<Item.Meta content="2016" />
-							<Item.Extra>
+							</a>
+							<div className="meta">2016</div>
+							<div className="extra">
 								<Label icon="ban" content="Deprecated" />
 								<Label icon="code" content="C" />
 								<Label icon="js" content="JavaScript" />
-							</Item.Extra>
-							<Item.Description>
+							</div>
+							<div className="description">
 								<p className="section-paragraph">
 									A Pebble watchface for the original Pebble Steel. It uses the <a href="https://openweathermap.org/" target="_blank" rel="noreferrer" className="clearly-a-link">OpenWeatherMap API</a> to display an up to date temperature right on your watchface. Also created a custom time display that shows the date, time, and battery. This is a lot of random text that I am using to test whether adding a lot of text would make this set up look weird or not.
 								</p>
-							</Item.Description>
-						</Item.Content>
-					</Item>
-					<Item>
-						<Item.Image src={areTheyGoodLogo} size="medium" alt="Are they good..." circular />
-						<Item.Content>
-							<Item.Header as="a" href="https://github.com/tdayley/AreTheyGood" target="_blank" rel="noreferrer">
+							</div>
+						</div>
+					</div>
+					<div className="item">
+						<div className="ui medium circular image">
+							<img src="/images/aretheygoodlogo.png" alt="Are they good..." />
+						</div>
+						<div className="content">
+							<a className="header" href="https://github.com/tdayley/AreTheyGood" target="_blank" rel="noreferrer">
 								Are they good...
-							</Item.Header>
-							<Item.Meta content="2017" />
-							<Item.Extra>
+							</a>
+							<div className="meta">2017</div>
+							<div className="extra">
 								<Label icon="ban" content="Deprecated" />
 								<Label icon="php" content="PHP" />
 								<Label icon="html5" content="HTML" />
 								<Label icon="css3 alternate" content="CSS" />
 								<Label icon="js" content="JavaScript" />
-							</Item.Extra>
-							<Item.Description>
+							</div>
+							<div className="description">
 								<p className="section-paragraph">
 									This is a project I created for the RIOT Games API 2016 Challenge. It uses the <a href="https://developer.riotgames.com/" target="_blank" rel="noreferrer" className="clearly-a-link" >League of Legends API</a> to grab information of a summoner and give detailed information of their best champions.
 								</p>
-							</Item.Description>
-						</Item.Content>
-					</Item>
-				</Item.Group>
-			</Container>
-			<Container text className="margin-bottom-50">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div className="ui text container margin-bottom-50">
 				<Title name="contact" iconName="mail" />
 				<form
 					className="js-contact-form"
@@ -101,7 +107,7 @@ const Body = () => {
 						Send
 					</button>
 				</form>
-			</Container>
+			</div>
 		</div>
 	);
 };
