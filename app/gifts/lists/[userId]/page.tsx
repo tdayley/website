@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import ItemView from '@/components/gifts/ItemView';
+import ClaimableList, { type Claim } from '@/components/gifts/ClaimableList';
 import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, type WishlistItem } from '@/lib/wishlist';
@@ -36,6 +36,25 @@ export default async function MemberWishlist({ params }: Props) {
 		.order('created_at');
 	const items = await withPhotoUrls(supabase, (data ?? []) as WishlistItem[]);
 
+	// Who's getting what. The database never returns claims on your own items,
+	// and this page is never shown to the list's owner (they're redirected above).
+	const claims: Record<string, Claim> = {};
+	if (items.length > 0) {
+		const { data: claimRows } = await supabase
+			.from('claims')
+			.select('item_id, claimed_by')
+			.in('item_id', items.map((i) => i.id));
+		const others = [...new Set((claimRows ?? []).map((c) => c.claimed_by as string).filter((id) => id !== me))];
+		const names = new Map<string, string>();
+		if (others.length > 0) {
+			const { data: people } = await supabase.from('profiles').select('id, display_name').in('id', others);
+			(people ?? []).forEach((p) => names.set(p.id as string, p.display_name as string));
+		}
+		(claimRows ?? []).forEach((c) => {
+			claims[c.item_id as string] = { mine: c.claimed_by === me, name: names.get(c.claimed_by as string) ?? null };
+		});
+	}
+
 	return (
 		<div className="gx-page">
 			<Link className="gx-back" href="/gifts">
@@ -50,14 +69,8 @@ export default async function MemberWishlist({ params }: Props) {
 				</div>
 			) : (
 				<>
-					<p className="gx-lead">Their favorites are at the top.</p>
-					<ul className="wishlist gx-stagger">
-						{items.map((item) => (
-							<li key={item.id}>
-								<ItemView item={item} />
-							</li>
-						))}
-					</ul>
+					<p className="gx-lead">Their favorites are at the top. Mark what you&apos;re getting so nobody doubles up.</p>
+					<ClaimableList items={items} claims={claims} listUserId={userId} ownerName={profile.display_name} />
 				</>
 			)}
 		</div>
