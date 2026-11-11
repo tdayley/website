@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import ItemFields from '@/components/gifts/ItemFields';
 import SubmitButton from '@/components/gifts/SubmitButton';
+import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, itemErrors, type WishlistItem } from '@/lib/wishlist';
 import { updateItem } from '../actions';
@@ -27,8 +28,8 @@ export default async function EditItem({ params, searchParams }: Props) {
 	if (!me) redirect('/gifts/login');
 
 	const { data } = await supabase.from('wishlist_items').select(ITEM_COLUMNS).eq('id', id).eq('user_id', me).maybeSingle();
-	const item = data as WishlistItem | null;
-	if (!item) notFound();
+	if (!data) notFound();
+	const [item] = await withPhotoUrls(supabase, [data as WishlistItem]);
 
 	return (
 		<div className="gx-page">

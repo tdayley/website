@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import ItemFields from '@/components/gifts/ItemFields';
 import SubmitButton from '@/components/gifts/SubmitButton';
 import WishlistManager from '@/components/gifts/WishlistManager';
+import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, itemErrors, type WishlistItem } from '@/lib/wishlist';
 import { addItem } from './actions';
@@ -28,7 +29,7 @@ export default async function MyWishlist({ searchParams }: Props) {
 		.eq('user_id', me)
 		.order('position')
 		.order('created_at');
-	const items = (data ?? []) as WishlistItem[];
+	const items = await withPhotoUrls(supabase, (data ?? []) as WishlistItem[]);
 
 	const notice = params.added ? 'Added to your list.' : params.saved ? 'Saved.' : null;
 

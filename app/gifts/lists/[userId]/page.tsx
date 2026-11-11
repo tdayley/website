@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import ItemView from '@/components/gifts/ItemView';
+import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, type WishlistItem } from '@/lib/wishlist';
 
@@ -33,7 +34,7 @@ export default async function MemberWishlist({ params }: Props) {
 		.eq('user_id', userId)
 		.order('position')
 		.order('created_at');
-	const items = (data ?? []) as WishlistItem[];
+	const items = await withPhotoUrls(supabase, (data ?? []) as WishlistItem[]);
 
 	return (
 		<div className="gx-page">

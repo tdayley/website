@@ -1090,3 +1090,19 @@
 .exchange-card .exchange-name {
   display: block;
 }
+
+/* ---------- Item photo ---------- */
+
+.gx .photo-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.gx .photo-field .image-field-thumb {
+  width: 64px;
+  height: 64px;
+}
+.gx details.field-hint input {
+  margin: 4px 0 8px;
+}

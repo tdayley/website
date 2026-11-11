@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { deletePhotos } from '@/lib/photos';
 import { UUID, parseItemForm } from '@/lib/wishlist';
 
 async function signedIn() {
@@ -21,6 +22,7 @@ export async function addItem(formData: FormData) {
 	if (!parsed.ok) redirect(`/gifts/wishlist?error=${parsed.error}#add`);
 
 	const { supabase, userId } = await signedIn();
+	if (parsed.values.image_path && !parsed.values.image_path.startsWith(`${userId}/`)) redirect('/gifts/wishlist?error=photo#add');
 	const { data: last } = await supabase
 		.from('wishlist_items')
 		.select('position')
@@ -46,10 +48,16 @@ export async function updateItem(formData: FormData) {
 	if (!parsed.ok) redirect(`/gifts/wishlist/${id}?error=${parsed.error}`);
 
 	const { supabase, userId } = await signedIn();
+	if (parsed.values.image_path && !parsed.values.image_path.startsWith(`${userId}/`)) redirect(`/gifts/wishlist/${id}?error=photo`);
+	const { data: before } = await supabase.from('wishlist_items').select('image_path').eq('id', id).eq('user_id', userId).maybeSingle();
 	const { error } = await supabase.from('wishlist_items').update(parsed.values).eq('id', id).eq('user_id', userId);
 	if (error) {
 		console.error('updateItem failed:', error.message);
 		redirect(`/gifts/wishlist/${id}?error=save`);
+	}
+	// The old photo was replaced or taken off: delete the stored file.
+	if (before?.image_path && before.image_path !== parsed.values.image_path) {
+		await deletePhotos(supabase, [before.image_path]);
 	}
 	revalidatePath('/gifts/wishlist');
 	redirect('/gifts/wishlist?saved=1');
@@ -61,8 +69,10 @@ export async function updateItem(formData: FormData) {
 export async function removeItem(id: string) {
 	if (!UUID.test(String(id))) return;
 	const { supabase, userId } = await signedIn();
+	const { data: before } = await supabase.from('wishlist_items').select('image_path').eq('id', id).eq('user_id', userId).maybeSingle();
 	const { error } = await supabase.from('wishlist_items').delete().eq('id', id).eq('user_id', userId);
 	if (error) console.error('removeItem failed:', error.message);
+	else if (before?.image_path) await deletePhotos(supabase, [before.image_path]);
 	revalidatePath('/gifts/wishlist');
 }
 
