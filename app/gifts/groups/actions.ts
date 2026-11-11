@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { notifyDrawn } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
 
 export async function createGroup(formData: FormData) {
@@ -97,7 +98,9 @@ export async function runDraw(formData: FormData) {
 		const reason = /No valid draw/.test(error.message) ? 'impossible' : /At least 3/.test(error.message) ? 'few' : 'draw';
 		redirect(`/gifts/groups/${groupId}?error=${reason}#draw`);
 	}
-	redirect(`/gifts/groups/${groupId}?notice=drawn`);
+	// Tell everyone by email (without saying who they got). Skipped if email isn't set up.
+	const emailed = await notifyDrawn(groupId);
+	redirect(`/gifts/groups/${groupId}?notice=${emailed > 0 ? 'drawn_emailed' : 'drawn'}`);
 }
 
 export async function resetDraw(formData: FormData) {

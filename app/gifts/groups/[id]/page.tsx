@@ -32,6 +32,7 @@ const MIN_MEMBERS = 3;
 const notices: Record<string, string> = {
 	excluded: 'Added. Those two won’t draw each other.',
 	drawn: 'Names are drawn! Everyone can now see who they’re buying for.',
+	drawn_emailed: 'Names are drawn! We’ve emailed everyone to come and see who they’re buying for.',
 	reset: 'The draw was undone. Nobody has a name any more; draw again when you’re ready.',
 };
 

@@ -55,3 +55,36 @@ Photos added to wish list items are stored in a private bucket, `item-photos`, c
   never saved with an item are deleted once they're a day old, the next time that person uploads.
 - The post-season export should include this bucket as well as the database
   (Storage > item-photos > select all > Download).
+
+## Email notifications
+
+The site emails everyone when names are drawn, and sends a reminder when an exchange is a
+week away. Neither email says who anyone is buying for; they link to the site.
+
+If any of this isn't set up, the site simply sends nothing. The draw still works.
+
+### Server-only settings (Amplify > Hosting > Environment variables)
+
+| Name | Value |
+|---|---|
+| `SUPABASE_SECRET_KEY` | Supabase > Project Settings > API Keys > secret key (`sb_secret_...`). **Bypasses the access rules. Never give it a `NEXT_PUBLIC_` name.** Used only to look up members' email addresses. |
+| `RESEND_API_KEY` | A Resend API key with "Sending access" (resend.com > API Keys). |
+| `CRON_SECRET` | Any long random string. The daily reminder job must present it. |
+| `EMAIL_FROM` | Optional. Defaults to `Gift Exchange <gifts@timdayley.com>`; must be an address at the domain verified in Resend. |
+
+`amplify.yml` copies these into the running site during the build (Amplify doesn't do that
+by itself for server-only variables). After changing them, redeploy.
+
+### Daily reminder job
+
+`.github/workflows/gift-reminders.yml` runs once a day and calls
+`POST https://timdayley.com/api/gifts/reminders` with the secret.
+
+- Add the same `CRON_SECRET` value in GitHub: repo > Settings > Secrets and variables >
+  Actions > New repository secret.
+- Each exchange gets its reminder once, the first day it's 7 or fewer days away. If names
+  haven't been drawn by then, only the organizer is emailed.
+- GitHub pauses scheduled workflows in repositories with no activity for 60 days. If it has
+  been quiet since last Christmas, re-enable it under the repo's Actions tab each November
+  (the same time you unpause the Supabase project).
+- To test: Actions tab > "Gift exchange reminders" > Run workflow.

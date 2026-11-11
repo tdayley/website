@@ -19,3 +19,6 @@ npm-debug.log*
 
 # copied from node_modules by scripts/copy-semantic.mjs
 /public/vendor/
+
+# written by amplify.yml during the Amplify build; holds secrets
+.env.production
