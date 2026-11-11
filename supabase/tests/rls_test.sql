@@ -111,6 +111,88 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000c'
 delete from public.memberships where user_id = auth.uid();
 select pg_temp.check((select count(*) from public.memberships where user_id = auth.uid()) = 1, 'cannot leave after the draw');
 
+-- The real draw. At this point group g is locked by the simulated draw above,
+-- has members alice (organizer), bob, carol, and bob-carol are excluded.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
+select pg_temp.denied($$select public.reset_draw((select id from g))$$, 'member resets the draw');
+select pg_temp.denied($$select public.draw_search((select id from g), '{}', '{}')$$, 'calling the internal search function directly');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+select pg_temp.denied($$select public.run_draw((select id from g))$$, 'drawing twice without a reset');
+select public.reset_draw((select id from g));
+select pg_temp.check((select draw_completed_at is null from public.groups), 'reset reopens the exchange');
+select pg_temp.check((select count(*) from public.assignments) = 0, 'reset clears assignments');
+select pg_temp.denied($$select public.run_draw((select id from g))$$, 'draw that exclusions make impossible (bob and carol could only both buy for alice)');
+select pg_temp.check((select draw_completed_at is null from public.groups), 'failed draw leaves the exchange open');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
+select pg_temp.denied($$select public.run_draw((select id from g))$$, 'member runs the draw');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+delete from public.exclusions;
+select public.run_draw((select id from g));
+select pg_temp.check((select draw_completed_at is not null from public.groups), 'draw locks the exchange');
+select pg_temp.check((select count(*) from public.assignments) = 1, 'after the real draw, organizer still sees only own assignment');
+select pg_temp.check((select receiver_id <> auth.uid() from public.assignments), 'organizer did not draw themselves');
+select pg_temp.denied($$insert into public.exclusions (group_id, user_a, user_b) values ((select id from g), '00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c')$$, 'adding an exclusion after the draw');
+
+-- Many draws, checked with full visibility (as the database owner): 2 members is too few;
+-- then 4 members with alice-bob excluded, and 6 members as three couples, 40 draws each.
+reset role;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+do $$
+declare
+	gid uuid := (select id from g);
+	other uuid;
+	i int;
+	bad int;
+	seen text[] := '{}';
+begin
+	perform public.reset_draw(gid);
+
+	delete from public.memberships where group_id = gid and user_id = '00000000-0000-0000-0000-00000000000c';
+	begin
+		perform public.run_draw(gid);
+		raise exception 'FAIL: draw with 2 people was allowed';
+	exception when others then
+		if sqlerrm like 'FAIL%' then raise; end if;
+		raise notice 'ok   draw with 2 people (blocked: %)', sqlerrm;
+	end;
+	insert into public.memberships (group_id, user_id) values (gid, '00000000-0000-0000-0000-00000000000c'), (gid, '00000000-0000-0000-0000-00000000000d');
+	insert into public.exclusions (group_id, user_a, user_b) values (gid, '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b');
+
+	for round in 1..2 loop
+		if round = 2 then
+			insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000e', 'erin@example.com'), ('00000000-0000-0000-0000-00000000000f', 'frank@example.com');
+			insert into public.memberships (group_id, user_id) values (gid, '00000000-0000-0000-0000-00000000000e'), (gid, '00000000-0000-0000-0000-00000000000f');
+			insert into public.exclusions (group_id, user_a, user_b) values
+				(gid, '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-00000000000d'),
+				(gid, '00000000-0000-0000-0000-00000000000e', '00000000-0000-0000-0000-00000000000f');
+		end if;
+		for i in 1..40 loop
+			perform public.run_draw(gid);
+			select count(*) into bad from public.memberships m
+			where m.group_id = gid and (
+				(select count(*) from public.assignments a where a.group_id = gid and a.giver_id = m.user_id) <> 1
+				or (select count(*) from public.assignments a where a.group_id = gid and a.receiver_id = m.user_id) <> 1);
+			if bad > 0 then raise exception 'FAIL: someone does not give once and receive once'; end if;
+			if exists (select 1 from public.assignments a where a.group_id = gid and a.giver_id = a.receiver_id) then
+				raise exception 'FAIL: someone drew themselves';
+			end if;
+			if exists (select 1 from public.assignments a join public.exclusions e on e.group_id = a.group_id
+				and ((e.user_a = a.giver_id and e.user_b = a.receiver_id) or (e.user_b = a.giver_id and e.user_a = a.receiver_id))
+				where a.group_id = gid) then
+				raise exception 'FAIL: an excluded pair was drawn';
+			end if;
+			select receiver_id into other from public.assignments where group_id = gid and giver_id = '00000000-0000-0000-0000-00000000000a';
+			if not other::text = any (seen) then seen := seen || other::text; end if;
+			perform public.reset_draw(gid);
+		end loop;
+		raise notice 'ok   40 draws with % members: everyone gives and receives once, no self-draws, exclusions respected',
+			(select count(*) from public.memberships where group_id = gid);
+	end loop;
+	if array_length(seen, 1) < 3 then raise exception 'FAIL: draws are not random (alice only ever drew %)', seen; end if;
+	raise notice 'ok   draws vary between runs (alice drew % different people)', array_length(seen, 1);
+	perform public.run_draw(gid);
+end $$;
+
 -- Signed-out visitors (anon role) see nothing
 set role anon;
 select set_config('request.jwt.claim.sub','',false);
