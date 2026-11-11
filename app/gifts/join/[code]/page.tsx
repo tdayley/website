@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import SubmitButton from '@/components/gifts/SubmitButton';
 import { formatDate } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
 import { joinGroup } from '../../groups/actions';
 
 export const metadata: Metadata = {
-	title: 'Join exchange · timdayley',
+	title: 'Join exchange · Gift exchange',
 };
 
 type Props = {
@@ -38,56 +39,54 @@ export default async function JoinPage({ params, searchParams }: Props) {
 	let body;
 	if (!invite) {
 		body = (
-			<div className="ui negative message">
-				<div className="header">This invite link isn&apos;t valid</div>
-				<p>Check that you copied the whole link, or ask the organizer to send it again.</p>
+			<div className="gx-note gx-note--bad">
+				<p>
+					<strong>This invite link isn&apos;t valid</strong>
+					Check that you copied the whole link, or ask the organizer to send it again.
+				</p>
 			</div>
 		);
 	} else if (invite.draw_done) {
 		body = (
-			<div className="ui warning message">
-				<div className="header">Names have already been drawn</div>
+			<div className="gx-note gx-note--warn">
 				<p>
-					{invite.group_name} has already drawn names, so new people can&apos;t join. Ask{' '}
-					{invite.organizer_name ?? 'the organizer'} if you think this is a mistake.
+					<strong>Names have already been drawn</strong>
+					{invite.group_name} has already drawn names, so new people can&apos;t join. Ask {invite.organizer_name ?? 'the organizer'} if you
+					think this is a mistake.
 				</p>
 			</div>
 		);
 	} else {
 		const date = formatDate(invite.exchange_date);
 		body = (
-			<>
+			<div className="gx-card" style={{ textAlign: 'center' }}>
+				<p style={{ fontSize: 48, lineHeight: 1, margin: '6px 0 12px' }} aria-hidden="true">
+					💌
+				</p>
+				<p className="gx-muted" style={{ marginBottom: 2 }}>
+					{invite.organizer_name ?? 'Someone'} invited you to join
+				</p>
+				<h1 className="gx-title">{invite.group_name}</h1>
+				{date ? <p className="gx-muted">{date}</p> : null}
 				{error ? (
-					<div className="ui negative message">
+					<div className="gx-note gx-note--bad" style={{ margin: '14px 0', textAlign: 'left' }}>
 						<p>Couldn&apos;t join. Please try again.</p>
 					</div>
 				) : null}
-				<p className="section-paragraph">
-					{invite.organizer_name ?? 'Someone'} invited you to join <strong>{invite.group_name}</strong>
-					{date ? `, happening ${date}` : null}.
-				</p>
-				<form action={joinGroup}>
+				<form action={joinGroup} style={{ marginTop: 18 }}>
 					<input type="hidden" name="code" value={code} />
-					<button className="ui primary button" type="submit">
-						Join {invite.group_name}
-					</button>
+					<SubmitButton className="gx-btn--block">Join {invite.group_name}</SubmitButton>
 				</form>
-			</>
+			</div>
 		);
 	}
 
 	return (
-		<div className="wrapper">
-			<div className="ui text container margin-bottom-50">
-				<h2 className="ui dividing header">
-					<i aria-hidden="true" className="gift icon"></i>
-					gift exchange invite
-				</h2>
-				{body}
-				<p style={{ marginTop: '2em' }}>
-					<Link href="/gifts">Go to your exchanges</Link>
-				</p>
-			</div>
+		<div className="gx-page gx-stack">
+			{body}
+			<p style={{ textAlign: 'center' }}>
+				<Link href="/gifts">Go to your exchanges</Link>
+			</p>
 		</div>
 	);
 }

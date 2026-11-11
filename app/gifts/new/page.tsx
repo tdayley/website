@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import SubmitButton from '@/components/gifts/SubmitButton';
 import { createGroup } from '../groups/actions';
 
 export const metadata: Metadata = {
-	title: 'New exchange · timdayley',
+	title: 'New exchange · Gift exchange',
 };
 
 const errors: Record<string, string> = {
@@ -21,46 +22,43 @@ export default async function NewGroup({ searchParams }: Props) {
 	const { error } = await searchParams;
 
 	return (
-		<div className="wrapper">
-			<div className="ui text container margin-bottom-50">
-				<p>
-					<Link href="/gifts">← Back</Link>
-				</p>
-				<h2 className="ui dividing header">
-					<i aria-hidden="true" className="gift icon"></i>
-					new exchange
-				</h2>
+		<div className="gx-page">
+			<Link className="gx-back" href="/gifts">
+				<span aria-hidden="true">←</span> Back
+			</Link>
+			<h1 className="gx-title">New exchange</h1>
+			<p className="gx-lead">You&apos;ll be the organizer and get an invite link to share with the family.</p>
 
-				{error && errors[error] ? (
-					<div className="ui negative message">
-						<p>{errors[error]}</p>
-					</div>
-				) : null}
+			{error && errors[error] ? (
+				<div className="gx-note gx-note--bad" style={{ marginBottom: 18 }}>
+					<p>{errors[error]}</p>
+				</div>
+			) : null}
 
-				<form className="ui form" action={createGroup}>
-					<div className="required field">
-						<label htmlFor="name">Name</label>
-						<input id="name" name="name" placeholder="Family Christmas 2026" maxLength={100} required />
-					</div>
-					<div className="two fields">
-						<div className="field">
-							<label htmlFor="budget">Budget per gift (optional)</label>
-							<div className="ui labeled input">
-								<div className="ui basic label">$</div>
-								<input id="budget" name="budget" type="number" min="0" step="0.01" inputMode="decimal" placeholder="50" />
-							</div>
-						</div>
-						<div className="field">
-							<label htmlFor="exchange_date">Exchange date (optional)</label>
-							<input id="exchange_date" name="exchange_date" type="date" />
+			<form className="gx-card gx-form" action={createGroup}>
+				<div className="gx-field">
+					<label htmlFor="name">Name</label>
+					<input id="name" name="name" placeholder="Family Christmas 2026" maxLength={100} required />
+				</div>
+				<div className="gx-two">
+					<div className="gx-field">
+						<label htmlFor="budget">
+							Budget per gift <span className="gx-optional">(optional)</span>
+						</label>
+						<div className="gx-prefixed">
+							<span aria-hidden="true">$</span>
+							<input id="budget" name="budget" type="number" min="0" step="0.01" inputMode="decimal" placeholder="50" />
 						</div>
 					</div>
-					<p>You&apos;ll be the organizer and get an invite link to share with the family.</p>
-					<button className="ui primary button" type="submit">
-						Create exchange
-					</button>
-				</form>
-			</div>
+					<div className="gx-field">
+						<label htmlFor="exchange_date">
+							Exchange date <span className="gx-optional">(optional)</span>
+						</label>
+						<input id="exchange_date" name="exchange_date" type="date" />
+					</div>
+				</div>
+				<SubmitButton className="gx-btn--block">Create exchange</SubmitButton>
+			</form>
 		</div>
 	);
 }

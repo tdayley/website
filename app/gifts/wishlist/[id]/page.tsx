@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import ItemFields from '@/components/ItemFields';
+import ItemFields from '@/components/gifts/ItemFields';
+import SubmitButton from '@/components/gifts/SubmitButton';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, itemErrors, type WishlistItem } from '@/lib/wishlist';
 import { updateItem } from '../actions';
 
 export const metadata: Metadata = {
-	title: 'Edit item · timdayley',
+	title: 'Edit item · Gift exchange',
 };
 
 type Props = {
@@ -30,31 +31,26 @@ export default async function EditItem({ params, searchParams }: Props) {
 	if (!item) notFound();
 
 	return (
-		<div className="wrapper">
-			<div className="ui text container margin-bottom-50">
-				<p>
-					<Link href="/gifts/wishlist">← My wish list</Link>
-				</p>
-				<h2 className="ui dividing header">
-					<i aria-hidden="true" className="pencil alternate icon"></i>
-					edit item
-				</h2>
-				{error && itemErrors[error] ? (
-					<div className="ui negative message">
-						<p>{itemErrors[error]}</p>
-					</div>
-				) : null}
-				<form className="ui form" action={updateItem}>
-					<input type="hidden" name="id" value={item.id} />
-					<ItemFields item={item} />
-					<button className="ui primary button" type="submit">
-						Save
-					</button>
-					<Link className="ui basic button" href="/gifts/wishlist">
+		<div className="gx-page">
+			<Link className="gx-back" href="/gifts/wishlist">
+				<span aria-hidden="true">←</span> My wish list
+			</Link>
+			<h1 className="gx-title">Edit item</h1>
+			{error && itemErrors[error] ? (
+				<div className="gx-note gx-note--bad" style={{ marginBottom: 18 }}>
+					<p>{itemErrors[error]}</p>
+				</div>
+			) : null}
+			<form className="gx-card gx-form" action={updateItem}>
+				<input type="hidden" name="id" value={item.id} />
+				<ItemFields item={item} />
+				<div className="gx-row-actions">
+					<SubmitButton>Save</SubmitButton>
+					<Link className="gx-btn gx-btn--ghost" href="/gifts/wishlist">
 						Cancel
 					</Link>
-				</form>
-			</div>
+				</div>
+			</form>
 		</div>
 	);
 }

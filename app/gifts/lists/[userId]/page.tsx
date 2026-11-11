@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import ItemView from '@/components/ItemView';
+import ItemView from '@/components/gifts/ItemView';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, type WishlistItem } from '@/lib/wishlist';
 
 export const metadata: Metadata = {
-	title: 'Wish list · timdayley',
+	title: 'Wish list · Gift exchange',
 };
 
 type Props = {
@@ -36,25 +36,29 @@ export default async function MemberWishlist({ params }: Props) {
 	const items = (data ?? []) as WishlistItem[];
 
 	return (
-		<div className="wrapper">
-			<div className="ui text container margin-bottom-50">
-				<p>
-					<Link href="/gifts">← Back</Link>
-				</p>
-				<h2 className="ui dividing header">
-					<i aria-hidden="true" className="list alternate outline icon"></i>
-					{profile.display_name}&apos;s wish list
-				</h2>
-				{items.length === 0 ? (
-					<p className="section-paragraph">{profile.display_name} hasn&apos;t added anything yet.</p>
-				) : (
-					<div className="ui divided items">
+		<div className="gx-page">
+			<Link className="gx-back" href="/gifts">
+				<span aria-hidden="true">←</span> Back
+			</Link>
+			<h1 className="gx-title">{profile.display_name}&apos;s wish list</h1>
+			{items.length === 0 ? (
+				<div className="gx-empty">
+					<span className="emoji" aria-hidden="true">🤷</span>
+					<strong>Nothing here yet</strong>
+					<p>{profile.display_name} hasn&apos;t added anything. Maybe give them a nudge?</p>
+				</div>
+			) : (
+				<>
+					<p className="gx-lead">Their favorites are at the top.</p>
+					<ul className="wishlist gx-stagger">
 						{items.map((item) => (
-							<ItemView key={item.id} item={item} />
+							<li key={item.id}>
+								<ItemView item={item} />
+							</li>
 						))}
-					</div>
-				)}
-			</div>
+					</ul>
+				</>
+			)}
 		</div>
 	);
 }

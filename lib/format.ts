@@ -20,3 +20,19 @@ export function formatDate(isoDate: string | null | undefined) {
 		timeZone: 'UTC',
 	});
 }
+
+// Whole days from today until "2026-12-24" (negative once it has passed).
+export function daysUntil(isoDate: string | null | undefined, now = new Date()) {
+	if (!isoDate) return null;
+	const [y, m, d] = isoDate.split('-').map(Number);
+	const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+	return Math.round((Date.UTC(y, m - 1, d) - today) / 86_400_000);
+}
+
+export function countdown(isoDate: string | null | undefined) {
+	const days = daysUntil(isoDate);
+	if (days == null || days < 0) return null;
+	if (days === 0) return 'Today!';
+	if (days === 1) return 'Tomorrow';
+	return `${days} days to go`;
+}

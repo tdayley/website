@@ -34,13 +34,19 @@ export async function proxy(request: NextRequest) {
 		const redirect = NextResponse.redirect(login);
 		// Also remember the page in a cookie: the sign-in email's link may not carry
 		// "next" (e.g. a custom email template), and /auth/confirm falls back to this.
-		redirect.cookies.set(NEXT_COOKIE, path + request.nextUrl.search, {
-			httpOnly: true,
-			sameSite: 'lax',
-			secure: request.nextUrl.protocol === 'https:',
-			path: '/',
-			maxAge: 60 * 60,
-		});
+		// Only for real page visits: Next.js preloads links in the background, and
+		// those requests must not overwrite the page the person actually asked for.
+		const h = request.headers;
+		const background = h.has('next-router-prefetch') || h.has('rsc') || h.get('purpose') === 'prefetch' || (h.get('sec-fetch-mode') ?? 'navigate') !== 'navigate';
+		if (!background) {
+			redirect.cookies.set(NEXT_COOKIE, path + request.nextUrl.search, {
+				httpOnly: true,
+				sameSite: 'lax',
+				secure: request.nextUrl.protocol === 'https:',
+				path: '/',
+				maxAge: 60 * 60,
+			});
+		}
 		return redirect;
 	}
 
