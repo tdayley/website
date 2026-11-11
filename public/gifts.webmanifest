@@ -1,0 +1,15 @@
+{
+  "name": "Gift Exchange",
+  "short_name": "Gifts",
+  "description": "Family gift exchange: wish lists and name drawing.",
+  "start_url": "/gifts",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f1e4",
+  "theme_color": "#f8f1e4",
+  "icons": [
+    { "src": "/gifts-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/gifts-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/gifts-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

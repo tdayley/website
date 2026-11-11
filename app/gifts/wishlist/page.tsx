@@ -1,19 +1,18 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import ConfirmButton from '@/components/ConfirmButton';
-import ItemFields from '@/components/ItemFields';
-import ItemView from '@/components/ItemView';
+import ItemFields from '@/components/gifts/ItemFields';
+import SubmitButton from '@/components/gifts/SubmitButton';
+import WishlistManager from '@/components/gifts/WishlistManager';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, itemErrors, type WishlistItem } from '@/lib/wishlist';
-import { addItem, deleteItem, moveItem } from './actions';
+import { addItem } from './actions';
 
 export const metadata: Metadata = {
-	title: 'My wish list · timdayley',
+	title: 'My wish list · Gift exchange',
 };
 
 type Props = {
-	searchParams: Promise<{ error?: string; added?: string; saved?: string; deleted?: string }>;
+	searchParams: Promise<{ error?: string; added?: string; saved?: string }>;
 };
 
 export default async function MyWishlist({ searchParams }: Props) {
@@ -31,82 +30,46 @@ export default async function MyWishlist({ searchParams }: Props) {
 		.order('created_at');
 	const items = (data ?? []) as WishlistItem[];
 
-	const notice = params.added ? 'Added to your list.' : params.saved ? 'Saved.' : params.deleted ? 'Removed from your list.' : null;
+	const notice = params.added ? 'Added to your list.' : params.saved ? 'Saved.' : null;
 
 	return (
-		<div className="wrapper">
-			<div className="ui text container margin-bottom-50">
-				<p>
-					<Link href="/gifts">← Back</Link>
-				</p>
-				<h2 className="ui dividing header">
-					<i aria-hidden="true" className="list alternate outline icon"></i>
-					my wish list
-				</h2>
-				<p>Everyone in your exchanges can see this list. Put your favorites at the top.</p>
+		<div className="gx-page">
+			<h1 className="gx-title">My wish list</h1>
+			<p className="gx-lead">Everyone in your exchanges can see this. Put your favorites at the top.</p>
 
-				{notice ? (
-					<div className="ui positive message">
-						<p>{notice}</p>
-					</div>
-				) : null}
+			{notice ? (
+				<div className="gx-note gx-note--good" style={{ marginBottom: 18 }}>
+					<i aria-hidden="true" className="check circle icon"></i>
+					<p>{notice}</p>
+				</div>
+			) : null}
 
-				{items.length === 0 ? (
-					<p className="section-paragraph">Nothing here yet. Add your first item below.</p>
-				) : (
-					<div className="ui divided items">
-						{items.map((item, index) => (
-							<ItemView
-								key={item.id}
-								item={item}
-								actions={
-									<>
-										<form action={moveItem}>
-											<input type="hidden" name="id" value={item.id} />
-											<input type="hidden" name="direction" value="up" />
-											<button className="ui mini basic icon button" type="submit" disabled={index === 0} aria-label={`Move ${item.title} up`} title="Move up">
-												<i aria-hidden="true" className="arrow up icon"></i>
-											</button>
-										</form>
-										<form action={moveItem}>
-											<input type="hidden" name="id" value={item.id} />
-											<input type="hidden" name="direction" value="down" />
-											<button className="ui mini basic icon button" type="submit" disabled={index === items.length - 1} aria-label={`Move ${item.title} down`} title="Move down">
-												<i aria-hidden="true" className="arrow down icon"></i>
-											</button>
-										</form>
-										<Link className="ui mini basic button" href={`/gifts/wishlist/${item.id}`}>
-											Edit
-										</Link>
-										<form action={deleteItem}>
-											<input type="hidden" name="id" value={item.id} />
-											<ConfirmButton className="ui mini basic red button" message={`Remove "${item.title}" from your list?`} label={`Remove ${item.title}`}>
-												Remove
-											</ConfirmButton>
-										</form>
-									</>
-								}
-							/>
-						))}
-					</div>
-				)}
+			{items.length === 0 ? (
+				<div className="gx-empty">
+					<span className="emoji" aria-hidden="true">📝</span>
+					<strong>Your list is empty</strong>
+					<p>Add a few things you&apos;d love, so whoever draws your name isn&apos;t guessing.</p>
+				</div>
+			) : (
+				<WishlistManager items={items} />
+			)}
 
-				<h3 className="ui header" id="add">
-					Add an item
-				</h3>
+			<section className="gx-section" id="add">
+				<h2 className="gx-h2">Add an item</h2>
 				{params.error && itemErrors[params.error] ? (
-					<div className="ui negative message">
+					<div className="gx-note gx-note--bad" style={{ margin: '10px 0 14px' }}>
 						<p>{itemErrors[params.error]}</p>
 					</div>
 				) : null}
-				<form className="ui form" action={addItem}>
+				<form className="gx-card gx-form" action={addItem} style={{ marginTop: 10 }}>
 					{/* The key resets the form's picture preview and hints after each add or removal. */}
 					<ItemFields key={items.length} />
-					<button className="ui primary button" type="submit">
+					<SubmitButton className="gx-btn--block">
+						<i aria-hidden="true" className="plus icon"></i>
 						Add to my list
-					</button>
+					</SubmitButton>
 				</form>
-			</div>
+			</section>
 		</div>
 	);
 }

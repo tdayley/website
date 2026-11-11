@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import ConfirmButton from '@/components/ConfirmButton';
-import CopyInviteLink from '@/components/CopyInviteLink';
-import { formatDate, formatMoney } from '@/lib/format';
+import Avatar from '@/components/gifts/Avatar';
+import ConfirmButton from '@/components/gifts/ConfirmButton';
+import CopyInviteLink from '@/components/gifts/CopyInviteLink';
+import RevealCard from '@/components/gifts/RevealCard';
+import SubmitButton from '@/components/gifts/SubmitButton';
+import { countdown, formatDate, formatMoney } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
 import { addExclusion, removeExclusion, resetDraw, runDraw } from '../actions';
 
 export const metadata: Metadata = {
-	title: 'Exchange · timdayley',
+	title: 'Exchange · Gift exchange',
 };
 
 type Props = {
@@ -94,104 +97,98 @@ export default async function GroupPage({ params, searchParams }: Props) {
 	const budget = formatMoney(group.budget_cents);
 	const date = formatDate(group.exchange_date);
 
-	return (
-		<div className="wrapper">
-			<div className="ui text container margin-bottom-50">
-				<p>
-					<Link href="/gifts">← All exchanges</Link>
-				</p>
-				<h2 className="ui dividing header">
-					<i aria-hidden="true" className="gift icon"></i>
-					{group.name}
-				</h2>
+	const days = countdown(group.exchange_date);
 
+	return (
+		<div className="gx-page">
+			<Link className="gx-back" href="/gifts">
+				<span aria-hidden="true">←</span> All exchanges
+			</Link>
+			<h1 className="gx-title">{group.name}</h1>
+
+			{date || budget ? (
+				<div className="gx-chips">
+					{date ? (
+						<span className="gx-chip">
+							<i aria-hidden="true" className="calendar alternate outline icon"></i>
+							{date}
+						</span>
+					) : null}
+					{days ? <span className="gx-chip">⏳ {days}</span> : null}
+					{budget ? (
+						<span className="gx-chip">
+							<i aria-hidden="true" className="tag icon"></i>
+							{budget} budget per gift
+						</span>
+					) : null}
+				</div>
+			) : null}
+
+			<div className="gx-stack">
 				{joined ? (
-					<div className="ui positive message">
+					<div className="gx-note gx-note--good">
+						<i aria-hidden="true" className="check circle icon"></i>
 						<p>You&apos;re in! Welcome to {group.name}.</p>
 					</div>
 				) : null}
 				{notice && notices[notice] ? (
-					<div className="ui positive message">
+					<div className="gx-note gx-note--good">
+						<i aria-hidden="true" className="check circle icon"></i>
 						<p>{notices[notice]}</p>
 					</div>
 				) : null}
 
-				<p className="section-paragraph">
-					{date ? (
-						<>
-							<i aria-hidden="true" className="calendar alternate outline icon"></i>
-							{date}
-							<br />
-						</>
-					) : null}
-					{budget ? (
-						<>
-							<i aria-hidden="true" className="dollar sign icon"></i>
-							{budget} budget per gift
-						</>
-					) : null}
-				</p>
-
-				{drawn && receiverId ? (
-					<div className="ui center aligned segment assignment-card margin-bottom-50">
-						<p>You&apos;re buying for</p>
-						<p className="assignment-name">{nameOf(receiverId)}</p>
-						<p>
-							<Link className="ui primary button" href={`/gifts/lists/${receiverId}`}>
-								<i aria-hidden="true" className="list alternate outline icon"></i>
-								See {nameOf(receiverId)}&apos;s wish list
-							</Link>
-						</p>
-						<p className="field-hint">Only you can see this. Keep it a secret!</p>
-					</div>
-				) : null}
+				{drawn && receiverId ? <RevealCard groupId={group.id} receiverId={receiverId} receiverName={nameOf(receiverId)} /> : null}
 				{drawn && !receiverId ? (
-					<div className="ui warning message">
+					<div className="gx-note gx-note--warn">
 						<p>Names have been drawn, but you weren&apos;t in the exchange at the time. Ask the organizer if that&apos;s a mistake.</p>
 					</div>
 				) : null}
 				{!drawn && !isOrganizer ? (
-					<div className="ui message">
+					<div className="gx-note">
+						<span aria-hidden="true">⏳</span>
 						<p>Names haven&apos;t been drawn yet. Once the organizer draws, you&apos;ll see who you&apos;re buying for here.</p>
 					</div>
 				) : null}
 
 				{isOrganizer && !drawn ? (
-					<div className="margin-bottom-50">
-						<h3 className="ui header">Invite the family</h3>
-						<p>Send this link to everyone taking part. They&apos;ll sign in with their email and join.</p>
-						<CopyInviteLink code={group.invite_code} />
-					</div>
+					<section className="gx-card">
+						<h2 className="gx-h2">Invite the family</h2>
+						<p className="gx-muted">Send this link to everyone taking part. They&apos;ll sign in with their email and join.</p>
+						<CopyInviteLink code={group.invite_code} groupName={group.name} />
+					</section>
 				) : null}
 
-				<h3 className="ui header">
-					Members <span className="ui circular label">{members.length}</span>
-				</h3>
-				<p>Pick a name to see their wish list.</p>
-				<div className="ui relaxed divided list margin-bottom-50">
-					{members.map((m) => (
-						<div className="item" key={m.user_id}>
-							<i aria-hidden="true" className="user circle icon"></i>
-							<div className="content">
-								<Link href={m.user_id === me ? '/gifts/wishlist' : `/gifts/lists/${m.user_id}`}>
-									{m.profiles?.display_name ?? 'Unknown'}
-								</Link>
-								{m.user_id === me ? ' (you)' : null}
-								{m.role === 'organizer' ? (
-									<span className="ui tiny basic label" style={{ marginLeft: '0.5em' }}>
-										organizer
-									</span>
-								) : null}
-							</div>
-						</div>
-					))}
-				</div>
+				<section className="gx-card">
+					<h2 className="gx-h2">
+						Who&apos;s in <span className="gx-count">{members.length}</span>
+					</h2>
+					<p className="gx-muted">Tap a name to see their wish list.</p>
+					<ul className="gx-rows gx-stagger">
+						{members.map((m) => {
+							const name = m.profiles?.display_name ?? 'Unknown';
+							return (
+								<li key={m.user_id}>
+									<Link className="member-row" href={m.user_id === me ? '/gifts/wishlist' : `/gifts/lists/${m.user_id}`}>
+										<Avatar id={m.user_id} name={name} />
+										<span className="member-name">
+											{name}
+											{m.user_id === me ? <span className="gx-muted"> (you)</span> : null}
+										</span>
+										{m.role === 'organizer' ? <span className="gx-pill gx-pill--green">organizer</span> : null}
+										<span className="chev" aria-hidden="true">›</span>
+									</Link>
+								</li>
+							);
+						})}
+					</ul>
+				</section>
 
 				{isOrganizer ? (
-					<div id="draw">
-						<h3 className="ui header">Draw names</h3>
+					<section className="gx-card" id="draw">
+						<h2 className="gx-h2">Draw names</h2>
 						{error && errors[error] ? (
-							<div className="ui negative message">
+							<div className="gx-note gx-note--bad" style={{ margin: '10px 0 14px' }}>
 								<p>{errors[error]}</p>
 							</div>
 						) : null}
@@ -199,13 +196,15 @@ export default async function GroupPage({ params, searchParams }: Props) {
 						{drawn ? (
 							<>
 								<p>
-									Names are drawn and the exchange is locked: nobody can join, leave or change the rules. You can&apos;t see who
-									anyone else got, either.
+									Names are drawn and the exchange is locked: nobody can join, leave or change the rules. You can&apos;t see who anyone
+									else got, either.
 								</p>
 								<form action={resetDraw}>
 									<input type="hidden" name="group_id" value={group.id} />
 									<ConfirmButton
-										className="ui basic red button"
+										className="gx-btn--danger gx-btn--small"
+										danger
+										confirmLabel="Undo the draw"
 										message="Undo the draw? Everyone’s name will be thrown away, and a new draw will give people different names. Only do this if nobody has started shopping."
 									>
 										Undo the draw
@@ -214,12 +213,14 @@ export default async function GroupPage({ params, searchParams }: Props) {
 							</>
 						) : (
 							<>
-								<h4 className="ui header">Who can&apos;t draw each other?</h4>
-								<p>Optional. Use this for couples, or anyone who shouldn&apos;t be buying for each other.</p>
+								<h3 className="gx-h3" style={{ marginTop: 10 }}>
+									Who can&apos;t draw each other?
+								</h3>
+								<p className="gx-muted">Optional. Use this for couples, or anyone who shouldn&apos;t be buying for each other.</p>
 								{exclusions.length > 0 ? (
-									<div className="ui relaxed divided list">
+									<ul className="gx-rows" style={{ marginBottom: 14 }}>
 										{exclusions.map((x) => (
-											<div className="item exclusion-row" key={x.id}>
+											<li className="exclusion-row" key={x.id}>
 												<span>
 													<i aria-hidden="true" className="ban icon"></i>
 													{nameOf(x.user_a)} and {nameOf(x.user_b)}
@@ -227,19 +228,19 @@ export default async function GroupPage({ params, searchParams }: Props) {
 												<form action={removeExclusion}>
 													<input type="hidden" name="group_id" value={group.id} />
 													<input type="hidden" name="id" value={x.id} />
-													<button className="ui mini basic button" type="submit" aria-label={`Remove rule for ${nameOf(x.user_a)} and ${nameOf(x.user_b)}`}>
+													<SubmitButton className="gx-btn--ghost gx-btn--small" label={`Remove rule for ${nameOf(x.user_a)} and ${nameOf(x.user_b)}`}>
 														Remove
-													</button>
+													</SubmitButton>
 												</form>
-											</div>
+											</li>
 										))}
-									</div>
+									</ul>
 								) : null}
 								{members.length >= 2 ? (
-									<form className="ui form margin-bottom-50" action={addExclusion}>
+									<form className="gx-form" action={addExclusion}>
 										<input type="hidden" name="group_id" value={group.id} />
-										<div className="two fields">
-											<div className="field">
+										<div className="gx-two">
+											<div className="gx-field">
 												<label htmlFor="user_a">This person</label>
 												<select id="user_a" name="user_a" defaultValue="" required>
 													<option value="" disabled>
@@ -252,7 +253,7 @@ export default async function GroupPage({ params, searchParams }: Props) {
 													))}
 												</select>
 											</div>
-											<div className="field">
+											<div className="gx-field">
 												<label htmlFor="user_b">can&apos;t draw this person</label>
 												<select id="user_b" name="user_b" defaultValue="" required>
 													<option value="" disabled>
@@ -266,27 +267,30 @@ export default async function GroupPage({ params, searchParams }: Props) {
 												</select>
 											</div>
 										</div>
-										<p className="field-hint">It works both ways: neither will get the other.</p>
-										<button className="ui button" type="submit">
-											Add
-										</button>
+										<div className="gx-row-actions">
+											<SubmitButton className="gx-btn--ghost gx-btn--small">Add rule</SubmitButton>
+											<span className="gx-muted gx-small">It works both ways.</span>
+										</div>
 									</form>
 								) : null}
 
+								<hr style={{ border: 0, borderTop: '1px solid var(--line)', margin: '20px 0 16px' }} />
+
 								{members.length < MIN_MEMBERS ? (
-									<p>
+									<p className="gx-muted">
 										You need at least {MIN_MEMBERS} people to draw names. {members.length} so far.
 									</p>
 								) : (
 									<>
 										<p>
-											When everyone has joined, draw names. Each of the {members.length} people gets one person to buy for. After
-											that, nobody else can join.
+											When everyone has joined, draw names. Each of the {members.length} people gets one person to buy for. After that,
+											nobody else can join.
 										</p>
 										<form action={runDraw}>
 											<input type="hidden" name="group_id" value={group.id} />
 											<ConfirmButton
-												className="ui primary button"
+												className="gx-btn--festive gx-btn--block"
+												confirmLabel="Draw names"
 												message={`Draw names for all ${members.length} people now? Nobody else will be able to join afterwards.`}
 											>
 												<i aria-hidden="true" className="random icon"></i>
@@ -297,7 +301,7 @@ export default async function GroupPage({ params, searchParams }: Props) {
 								)}
 							</>
 						)}
-					</div>
+					</section>
 				) : null}
 			</div>
 		</div>

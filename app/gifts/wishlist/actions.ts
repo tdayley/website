@@ -55,20 +55,19 @@ export async function updateItem(formData: FormData) {
 	redirect('/gifts/wishlist?saved=1');
 }
 
-export async function deleteItem(formData: FormData) {
-	const id = String(formData.get('id') ?? '');
-	if (!UUID.test(id)) redirect('/gifts/wishlist');
+// Called straight from the list (not a form): the screen has already updated,
+// so these just save the change and refresh the page's data.
 
+export async function removeItem(id: string) {
+	if (!UUID.test(String(id))) return;
 	const { supabase, userId } = await signedIn();
 	const { error } = await supabase.from('wishlist_items').delete().eq('id', id).eq('user_id', userId);
-	if (error) console.error('deleteItem failed:', error.message);
+	if (error) console.error('removeItem failed:', error.message);
 	revalidatePath('/gifts/wishlist');
-	redirect('/gifts/wishlist?deleted=1');
 }
 
-export async function moveItem(formData: FormData) {
-	const id = String(formData.get('id') ?? '');
-	const step = formData.get('direction') === 'up' ? -1 : 1;
+export async function moveItem(id: string, direction: 'up' | 'down') {
+	const step = direction === 'up' ? -1 : 1;
 
 	const { supabase, userId } = await signedIn();
 	const { data } = await supabase
@@ -94,5 +93,4 @@ export async function moveItem(formData: FormData) {
 		if (failed) console.error('moveItem failed:', failed.error?.message);
 	}
 	revalidatePath('/gifts/wishlist');
-	redirect('/gifts/wishlist');
 }
