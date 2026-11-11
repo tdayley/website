@@ -86,6 +86,38 @@ delete from storage.objects where name like '00000000-0000-0000-0000-00000000000
 select pg_temp.check((select count(*) from storage.objects) = 0, 'owner can delete own photo');
 update public.wishlist_items set image_path = null where user_id = auth.uid();
 
+-- Claims ("I'm getting this"). alice, bob, carol share a group; dave is an outsider.
+-- alice's list has 'Kayak paddle'; bob's has 'Socks'; dave's has 'Outsider item'.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
+insert into public.claims (item_id) select id from public.wishlist_items where title = 'Kayak paddle';
+select pg_temp.check((select count(*) from public.claims) = 1, 'member claims an item on someone else''s list and sees the claim');
+select pg_temp.denied($$insert into public.claims (item_id) select id from public.wishlist_items where title = 'Socks'$$, 'claiming an item on your own list');
+select pg_temp.denied($$insert into public.claims (item_id, claimed_by) select id, '00000000-0000-0000-0000-00000000000c' from public.wishlist_items where title = 'Kayak paddle'$$, 'claiming on someone else''s behalf');
+select pg_temp.denied($$insert into public.claims (item_id) values ((select id from public.wishlist_items where user_id = '00000000-0000-0000-0000-00000000000d'))$$, 'claiming an outsider''s item (not visible)');
+select pg_temp.denied($$update public.claims set claimed_by = '00000000-0000-0000-0000-00000000000c'$$, 'editing a claim');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+select pg_temp.check((select count(*) from public.claims) = 0, 'the list owner cannot see claims on their own items');
+select pg_temp.denied($$insert into public.claims (item_id) select id from public.wishlist_items where title = 'Kayak paddle'$$, 'owner probing whether their own item is claimed (insert)');
+delete from public.claims;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000c',false);
+select pg_temp.check((select count(*) from public.claims) = 1, 'another member sees the claim (owner could not delete it)');
+select pg_temp.check((select claimed_by from public.claims) = '00000000-0000-0000-0000-00000000000b', 'another member sees who claimed it');
+select pg_temp.denied($$insert into public.claims (item_id) select id from public.wishlist_items where title = 'Kayak paddle'$$, 'claiming an item someone already claimed');
+delete from public.claims;
+select pg_temp.check((select count(*) from public.claims) = 1, 'cannot undo someone else''s claim');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000d',false);
+select pg_temp.check((select count(*) from public.claims) = 0, 'outsider cannot see claims');
+select pg_temp.denied($$insert into public.claims (item_id) values ((select item_id from public.claims limit 1))$$, 'outsider cannot claim');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
+delete from public.claims;
+select pg_temp.check((select count(*) from public.claims) = 0, 'claimer can undo their own claim');
+insert into public.claims (item_id) select id from public.wishlist_items where title = 'Kayak paddle';
+reset role;
+delete from public.wishlist_items where title = 'Kayak paddle';
+select pg_temp.check((select count(*) from public.claims) = 0, 'claim disappears when the item is deleted');
+insert into public.wishlist_items (user_id, title, url) values ('00000000-0000-0000-0000-00000000000a', 'Kayak paddle', 'https://example.com/paddle');
+set role authenticated;
+
 -- Writes that must be blocked
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
 select pg_temp.denied($$insert into public.wishlist_items (user_id, title) values ('00000000-0000-0000-0000-00000000000a','Fake')$$, 'add item to someone else''s list');
@@ -222,5 +254,6 @@ select pg_temp.check((select count(*) from public.profiles) + (select count(*) f
 select pg_temp.denied($$select public.join_group('x')$$, 'signed-out visitor calls join_group');
 select pg_temp.denied($$select * from public.invite_info('x')$$, 'signed-out visitor calls invite_info');
 select pg_temp.check((select count(*) from storage.objects) = 0, 'signed-out visitor sees no photos');
+select pg_temp.check((select count(*) from public.claims) = 0, 'signed-out visitor sees no claims');
 select pg_temp.denied($$insert into storage.objects (bucket_id, name) values ('item-photos', '00000000-0000-0000-0000-00000000000a/33333333-3333-3333-3333-333333333333.jpg')$$, 'signed-out visitor uploads a photo');
 \echo ALL TESTS PASSED

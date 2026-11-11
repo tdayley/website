@@ -1106,3 +1106,20 @@
 .gx details.field-hint input {
   margin: 4px 0 8px;
 }
+
+/* ---------- "I'm getting this" ---------- */
+
+.wishlist-item.is-claimed .item-thumb,
+.wishlist-item.is-claimed .item-body {
+  opacity: 0.55;
+}
+.wishlist-item .claim-pill {
+  min-height: 34px;
+  padding: 4px 14px;
+  font-size: 14.5px;
+  animation: gx-pop 0.3s var(--ease);
+}
+.wishlist .claim-note {
+  text-align: center;
+  padding: 6px 10px 0;
+}
