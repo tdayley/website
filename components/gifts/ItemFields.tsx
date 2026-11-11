@@ -1,7 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { uploadItemPhoto } from '@/app/gifts/wishlist/photo';
 import { fetchLinkPreview } from '@/app/gifts/wishlist/preview';
+import { shrinkPhoto } from '@/lib/shrink-photo';
 import type { WishlistItem } from '@/lib/wishlist';
 
 type Status = 'idle' | 'loading' | 'filled' | 'nothing';
@@ -17,6 +19,36 @@ export default function ItemFields({ item }: { item?: WishlistItem }) {
 	const [status, setStatus] = useState<Status>('idle');
 	const [image, setImage] = useState(item?.image_url ?? '');
 	const [imageBroken, setImageBroken] = useState(false);
+	// An uploaded photo: its storage path (saved with the item) and something to show for it.
+	const [photoPath, setPhotoPath] = useState(item?.image_path ?? '');
+	const [photoPreview, setPhotoPreview] = useState(item?.photo_url ?? '');
+	const [photoStatus, setPhotoStatus] = useState<'idle' | 'working' | 'unreadable' | 'failed'>('idle');
+	const fileRef = useRef<HTMLInputElement>(null);
+
+	async function addPhoto(file: File | undefined) {
+		if (!file) return;
+		setPhotoStatus('working');
+		const small = await shrinkPhoto(file);
+		if (!small) return setPhotoStatus('unreadable');
+		const body = new FormData();
+		body.set('photo', new File([small], 'photo.jpg', { type: 'image/jpeg' }));
+		let result: Awaited<ReturnType<typeof uploadItemPhoto>> | null = null;
+		try {
+			result = await uploadItemPhoto(body);
+		} catch {
+			// Reported below as a failed upload.
+		}
+		if (!result?.ok) return setPhotoStatus(result?.error === 'type' ? 'unreadable' : 'failed');
+		setPhotoPath(result.path);
+		setPhotoPreview(URL.createObjectURL(small));
+		setPhotoStatus('idle');
+	}
+
+	function removePhoto() {
+		setPhotoPath('');
+		setPhotoPreview('');
+		setPhotoStatus('idle');
+	}
 
 	function showImage(value: string) {
 		setImage(value.trim());
@@ -111,13 +143,51 @@ export default function ItemFields({ item }: { item?: WishlistItem }) {
 				</div>
 			</div>
 			<div className="gx-field">
-				<label htmlFor="image_url">
+				<span className="gx-label">
 					Picture <span className="gx-optional">(optional)</span>
-				</label>
-				<div className="image-field">
-					{image && !imageBroken ? (
+				</span>
+				<input type="hidden" name="image_path" value={photoPath} />
+				<input
+					ref={fileRef}
+					type="file"
+					accept="image/*"
+					hidden
+					aria-label="Choose a photo"
+					onChange={(e) => {
+						addPhoto(e.target.files?.[0]);
+						e.target.value = '';
+					}}
+				/>
+				<div className="photo-field">
+					{photoPreview ? (
+						<img className="image-field-thumb photo-thumb" src={photoPreview} alt="Your photo" />
+					) : image && !imageBroken ? (
 						<img className="image-field-thumb" src={image} alt="Picture preview" referrerPolicy="no-referrer" onError={() => setImageBroken(true)} />
 					) : null}
+					<button
+						type="button"
+						className={`gx-btn gx-btn--ghost gx-btn--small${photoStatus === 'working' ? ' is-pending' : ''}`}
+						onClick={() => fileRef.current?.click()}
+					>
+						<i aria-hidden="true" className="camera icon"></i>
+						{photoPath ? 'Change photo' : 'Add a photo'}
+					</button>
+					{photoPath ? (
+						<button type="button" className="gx-btn gx-btn--danger gx-btn--small" onClick={removePhoto}>
+							Remove photo
+						</button>
+					) : null}
+				</div>
+				<div className="field-hint" role="status" data-photo-status={photoStatus}>
+					{photoStatus === 'working' ? 'Adding your photo…' : null}
+					{photoStatus === 'unreadable' ? 'That file doesn’t seem to be a picture. Please choose a photo or screenshot.' : null}
+					{photoStatus === 'failed' ? 'Couldn’t add the photo. Check your connection and try again.' : null}
+					{photoStatus === 'idle' && !photoPath
+						? 'Take a photo, or pick one from your phone. A screenshot of the item works great.'
+						: null}
+				</div>
+				<details className="field-hint">
+					<summary>Or paste a link to a picture</summary>
 					<input
 						id="image_url"
 						name="image_url"
@@ -125,29 +195,16 @@ export default function ItemFields({ item }: { item?: WishlistItem }) {
 						inputMode="url"
 						autoCapitalize="none"
 						autoCorrect="off"
+						aria-label="Picture link"
 						defaultValue={item?.image_url ?? ''}
-						placeholder="Filled in from the link when possible"
+						placeholder="Filled in from the item link when possible"
 						onChange={(e) => showImage(e.target.value)}
 					/>
-				</div>
-				{image && imageBroken ? (
-					<div className="field-hint">That doesn’t seem to be a link to a picture. See the steps below, or leave this blank.</div>
-				) : null}
-				<details className="field-hint">
-					<summary>No picture showing? How to add one yourself</summary>
-					<p>A picture is optional. Your list works fine without one. To add one:</p>
-					<ol>
-						<li>
-							<strong>On a phone or tablet:</strong> open the item&apos;s page, press and hold its photo and choose{' '}
-							<em>Open image in new tab</em> if you see it. Copy the address from the top of that tab and paste it in the box
-							above. If that option isn&apos;t there, it&apos;s easiest to skip the picture.
-						</li>
-						<li>
-							<strong>On a computer:</strong> right-click the item&apos;s photo and choose <em>Copy image address</em> (Chrome,
-							Edge, Safari) or <em>Copy Image Link</em> (Firefox). Then paste it in the box above.
-						</li>
-					</ol>
-					<p>You&apos;ll know it worked when a small preview of the picture appears next to the box.</p>
+					{image && imageBroken ? <p>That doesn’t seem to be a link to a picture. Add a photo instead, or leave this blank.</p> : null}
+					<p>
+						On a computer, right-click the item&apos;s photo and choose <em>Copy image address</em> (or <em>Copy Image Link</em> in
+						Firefox), then paste it here.
+					</p>
 				</details>
 			</div>
 			<div className="gx-field">

@@ -64,6 +64,28 @@ select pg_temp.check((select count(*) from public.profiles) = 1, 'outsider sees 
 select pg_temp.check((select count(*) from public.wishlist_items) = 1, 'outsider sees only own list');
 select pg_temp.check((select count(*) from public.memberships) = 0, 'outsider sees no memberships');
 
+-- Item photos (storage). At this point alice, bob and carol share a group; dave is an outsider.
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+insert into storage.objects (bucket_id, name) values ('item-photos', '00000000-0000-0000-0000-00000000000a/11111111-1111-1111-1111-111111111111.jpg');
+select pg_temp.check((select count(*) from storage.objects) = 1, 'owner can upload and see own photo');
+select pg_temp.denied($$insert into storage.objects (bucket_id, name) values ('item-photos', '00000000-0000-0000-0000-00000000000b/22222222-2222-2222-2222-222222222222.jpg')$$, 'upload into someone else''s folder');
+select pg_temp.denied($$insert into storage.objects (bucket_id, name) values ('item-photos', 'loose-file.jpg')$$, 'upload outside any folder');
+select pg_temp.denied($$insert into storage.objects (bucket_id, name) values ('other-bucket', '00000000-0000-0000-0000-00000000000a/x.jpg')$$, 'upload to another bucket');
+update public.wishlist_items set image_path = '00000000-0000-0000-0000-00000000000a/11111111-1111-1111-1111-111111111111.jpg' where user_id = auth.uid();
+select pg_temp.check((select image_path is not null from public.wishlist_items where user_id = auth.uid()), 'item can point at own photo');
+select pg_temp.denied($$update public.wishlist_items set image_path = '00000000-0000-0000-0000-00000000000b/22222222-2222-2222-2222-222222222222.jpg' where user_id = auth.uid()$$, 'item pointing at a photo in someone else''s folder');
+select pg_temp.denied($$update public.wishlist_items set image_path = '../etc/passwd' where user_id = auth.uid()$$, 'item with a malformed photo path');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
+select pg_temp.check((select count(*) from storage.objects) = 1, 'group member can see the photo');
+delete from storage.objects;
+select pg_temp.check((select count(*) from storage.objects) = 1, 'group member cannot delete someone else''s photo');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000d',false);
+select pg_temp.check((select count(*) from storage.objects) = 0, 'outsider cannot see the photo');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+delete from storage.objects where name like '00000000-0000-0000-0000-00000000000a/%';
+select pg_temp.check((select count(*) from storage.objects) = 0, 'owner can delete own photo');
+update public.wishlist_items set image_path = null where user_id = auth.uid();
+
 -- Writes that must be blocked
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000b',false);
 select pg_temp.denied($$insert into public.wishlist_items (user_id, title) values ('00000000-0000-0000-0000-00000000000a','Fake')$$, 'add item to someone else''s list');
@@ -199,4 +221,6 @@ select set_config('request.jwt.claim.sub','',false);
 select pg_temp.check((select count(*) from public.profiles) + (select count(*) from public.groups) + (select count(*) from public.wishlist_items) + (select count(*) from public.assignments) = 0, 'signed-out visitor sees nothing');
 select pg_temp.denied($$select public.join_group('x')$$, 'signed-out visitor calls join_group');
 select pg_temp.denied($$select * from public.invite_info('x')$$, 'signed-out visitor calls invite_info');
+select pg_temp.check((select count(*) from storage.objects) = 0, 'signed-out visitor sees no photos');
+select pg_temp.denied($$insert into storage.objects (bucket_id, name) values ('item-photos', '00000000-0000-0000-0000-00000000000a/33333333-3333-3333-3333-333333333333.jpg')$$, 'signed-out visitor uploads a photo');
 \echo ALL TESTS PASSED

@@ -13,10 +13,11 @@ function hostname(url: string) {
 // One wish list entry, as a card. `actions` is optional (the buttons on your own list).
 export default function ItemView({ item, actions, className = '' }: { item: WishlistItem; actions?: ReactNode; className?: string }) {
 	const price = formatMoney(item.price_cents);
+	const picture = item.photo_url ?? item.image_url;
 	return (
 		<div className={`gx-card wishlist-item ${className}`}>
-			{item.image_url ? (
-				<img className="item-thumb" src={item.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" />
+			{picture ? (
+				<img className="item-thumb" src={picture} alt="" referrerPolicy="no-referrer" loading="lazy" />
 			) : (
 				<div className="item-thumb item-thumb--empty" aria-hidden="true">
 					🎁
