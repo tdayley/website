@@ -3,7 +3,10 @@ import Link from 'next/link';
 import '@fontsource-variable/fraunces';
 import '@fontsource-variable/nunito';
 import BrandMark from '@/components/gifts/BrandMark';
+import { GiftsBaseProvider } from '@/components/gifts/GiftsBase';
 import NavLinks from '@/components/gifts/NavLinks';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 import { createClient } from '@/lib/supabase/server';
 import './gifts.css';
 
@@ -30,11 +33,13 @@ export default async function GiftsLayout({ children }: { children: React.ReactN
 	const supabase = await createClient();
 	const { data } = await supabase.auth.getClaims();
 	const signedIn = Boolean(data?.claims?.sub);
+	const base = await giftsBase();
 
 	return (
+		<GiftsBaseProvider base={base}>
 		<div className={`gx${signedIn ? ' gx--tabs' : ''}`}>
 			<header className="gx-top">
-				<Link href="/gifts" className="gx-brand">
+				<Link href={at(base, '/')} className="gx-brand">
 					<BrandMark className="gx-brand-mark" />
 					Secret Santa
 				</Link>
@@ -43,5 +48,6 @@ export default async function GiftsLayout({ children }: { children: React.ReactN
 			<main className="gx-main">{children}</main>
 			{signedIn ? <NavLinks variant="tabs" /> : null}
 		</div>
+		</GiftsBaseProvider>
 	);
 }

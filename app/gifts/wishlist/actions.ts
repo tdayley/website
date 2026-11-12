@@ -5,12 +5,15 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { deletePhotos } from '@/lib/photos';
 import { UUID, parseItemForm } from '@/lib/wishlist';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 async function signedIn() {
+	const base = await giftsBase();
 	const supabase = await createClient();
 	const { data } = await supabase.auth.getClaims();
 	const userId = data?.claims?.sub;
-	if (!userId) redirect('/gifts/login');
+	if (!userId) redirect(at(base, '/login'));
 	return { supabase, userId: userId as string };
 }
 
@@ -18,11 +21,12 @@ async function signedIn() {
 // filters here just keep the queries tight.
 
 export async function addItem(formData: FormData) {
+	const base = await giftsBase();
 	const parsed = parseItemForm(formData);
-	if (!parsed.ok) redirect(`/gifts/wishlist?error=${parsed.error}#add`);
+	if (!parsed.ok) redirect(at(base, `/wishlist?error=${parsed.error}#add`));
 
 	const { supabase, userId } = await signedIn();
-	if (parsed.values.image_path && !parsed.values.image_path.startsWith(`${userId}/`)) redirect('/gifts/wishlist?error=photo#add');
+	if (parsed.values.image_path && !parsed.values.image_path.startsWith(`${userId}/`)) redirect(at(base, '/wishlist?error=photo#add'));
 	const { data: last } = await supabase
 		.from('wishlist_items')
 		.select('position')
@@ -34,33 +38,34 @@ export async function addItem(formData: FormData) {
 	const { error } = await supabase.from('wishlist_items').insert({ ...parsed.values, position });
 	if (error) {
 		console.error('addItem failed:', error.message);
-		redirect('/gifts/wishlist?error=save#add');
+		redirect(at(base, '/wishlist?error=save#add'));
 	}
 	revalidatePath('/gifts/wishlist');
-	redirect('/gifts/wishlist?added=1');
+	redirect(at(base, '/wishlist?added=1'));
 }
 
 export async function updateItem(formData: FormData) {
+	const base = await giftsBase();
 	const id = String(formData.get('id') ?? '');
-	if (!UUID.test(id)) redirect('/gifts/wishlist');
+	if (!UUID.test(id)) redirect(at(base, '/wishlist'));
 
 	const parsed = parseItemForm(formData);
-	if (!parsed.ok) redirect(`/gifts/wishlist/${id}?error=${parsed.error}`);
+	if (!parsed.ok) redirect(at(base, `/wishlist/${id}?error=${parsed.error}`));
 
 	const { supabase, userId } = await signedIn();
-	if (parsed.values.image_path && !parsed.values.image_path.startsWith(`${userId}/`)) redirect(`/gifts/wishlist/${id}?error=photo`);
+	if (parsed.values.image_path && !parsed.values.image_path.startsWith(`${userId}/`)) redirect(at(base, `/wishlist/${id}?error=photo`));
 	const { data: before } = await supabase.from('wishlist_items').select('image_path').eq('id', id).eq('user_id', userId).maybeSingle();
 	const { error } = await supabase.from('wishlist_items').update(parsed.values).eq('id', id).eq('user_id', userId);
 	if (error) {
 		console.error('updateItem failed:', error.message);
-		redirect(`/gifts/wishlist/${id}?error=save`);
+		redirect(at(base, `/wishlist/${id}?error=save`));
 	}
 	// The old photo was replaced or taken off: delete the stored file.
 	if (before?.image_path && before.image_path !== parsed.values.image_path) {
 		await deletePhotos(supabase, [before.image_path]);
 	}
 	revalidatePath('/gifts/wishlist');
-	redirect('/gifts/wishlist?saved=1');
+	redirect(at(base, '/wishlist?saved=1'));
 }
 
 // Called straight from the list (not a form): the screen has already updated,

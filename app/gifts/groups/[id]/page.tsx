@@ -9,6 +9,8 @@ import SubmitButton from '@/components/gifts/SubmitButton';
 import { countdown, formatDate, formatMoney } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
 import { addExclusion, removeExclusion, resetDraw, runDraw } from '../actions';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'Exchange · Secret Santa',
@@ -49,13 +51,14 @@ const errors: Record<string, string> = {
 };
 
 export default async function GroupPage({ params, searchParams }: Props) {
+	const base = await giftsBase();
 	const { id } = await params;
 	const { joined, notice, error } = await searchParams;
 
 	const supabase = await createClient();
 	const { data: auth } = await supabase.auth.getClaims();
 	const me = auth?.claims?.sub;
-	if (!me) redirect('/gifts/login');
+	if (!me) redirect(at(base, '/login'));
 
 	// Not a UUID: treat like a group that doesn't exist (avoids a database error).
 	if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -102,7 +105,7 @@ export default async function GroupPage({ params, searchParams }: Props) {
 
 	return (
 		<div className="gx-page">
-			<Link className="gx-back" href="/gifts">
+			<Link className="gx-back" href={at(base, '/')}>
 				<span aria-hidden="true">←</span> All exchanges
 			</Link>
 			<h1 className="gx-title">{group.name}</h1>
@@ -170,7 +173,7 @@ export default async function GroupPage({ params, searchParams }: Props) {
 							const name = m.profiles?.display_name ?? 'Unknown';
 							return (
 								<li key={m.user_id}>
-									<Link className="member-row" href={m.user_id === me ? '/gifts/wishlist' : `/gifts/lists/${m.user_id}`}>
+									<Link className="member-row" href={m.user_id === me ? at(base, '/wishlist') : at(base, `/lists/${m.user_id}`)}>
 										<Avatar id={m.user_id} name={name} />
 										<span className="member-name">
 											{name}

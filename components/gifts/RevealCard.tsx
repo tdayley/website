@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useSyncExternalStore } from 'react';
+import { useGiftsPath } from './GiftsBase';
 
 const subscribe = () => () => {};
 
@@ -22,6 +23,7 @@ const sparkles = Array.from({ length: 14 }, (_, i) => {
 // "You're buying for…" The first time, the name is wrapped up and you tap the gift to open it.
 // After that (on this phone or computer) it just shows the name.
 export default function RevealCard({ groupId, receiverId, receiverName }: { groupId: string; receiverId: string; receiverName: string }) {
+	const to = useGiftsPath();
 	const key = `gx-unwrapped:${groupId}:${receiverId}`;
 	const seenBefore = useSyncExternalStore(subscribe, () => read(key), () => false);
 	const [justOpened, setJustOpened] = useState(false);
@@ -67,7 +69,7 @@ export default function RevealCard({ groupId, receiverId, receiverName }: { grou
 			<p className="assignment-name">{receiverName}</p>
 			<div className="after-name">
 				<p>
-					<Link className="gx-btn gx-btn--festive" href={`/gifts/lists/${receiverId}`}>
+					<Link className="gx-btn gx-btn--festive" href={to(`/lists/${receiverId}`)}>
 						<i aria-hidden="true" className="list alternate outline icon"></i>
 						See {receiverName}&apos;s wish list
 					</Link>

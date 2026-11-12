@@ -5,6 +5,8 @@ import SubmitButton from '@/components/gifts/SubmitButton';
 import { formatDate } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
 import { joinGroup } from '../../groups/actions';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'Join exchange · Secret Santa',
@@ -25,6 +27,7 @@ type Invite = {
 };
 
 export default async function JoinPage({ params, searchParams }: Props) {
+	const base = await giftsBase();
 	const { code } = await params;
 	const { error } = await searchParams;
 
@@ -33,7 +36,7 @@ export default async function JoinPage({ params, searchParams }: Props) {
 	const invite = (data as Invite[] | null)?.[0];
 
 	if (invite?.already_member) {
-		redirect(`/gifts/groups/${invite.group_id}`);
+		redirect(at(base, `/groups/${invite.group_id}`));
 	}
 
 	let body;
@@ -85,7 +88,7 @@ export default async function JoinPage({ params, searchParams }: Props) {
 		<div className="gx-page gx-stack">
 			{body}
 			<p style={{ textAlign: 'center' }}>
-				<Link href="/gifts">Go to your exchanges</Link>
+				<Link href={at(base, '/')}>Go to your exchanges</Link>
 			</p>
 		</div>
 	);

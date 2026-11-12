@@ -1,9 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { emailConfigured, layout, sendEmails, type Email } from '@/lib/email';
 import { daysUntil, formatDate, formatMoney } from '@/lib/format';
+import { giftsHost } from '@/lib/gifts-path';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-const SITE = (process.env.SITE_URL ?? 'https://timdayley.com').replace(/\/$/, '');
+// Links in emails go to the Secret Santa subdomain when one is configured, otherwise to /gifts on the main site.
+const APP = giftsHost() ? `https://${giftsHost()}` : `${(process.env.SITE_URL ?? 'https://timdayley.com').replace(/\/$/, '')}/gifts`;
 const FOOTER = 'You’re getting this because you’re in a Secret Santa on timdayley.com.';
 
 type Group = { id: string; name: string; budget_cents: number | null; exchange_date: string | null; draw_completed_at: string | null };
@@ -46,7 +48,7 @@ export async function notifyDrawn(groupId: string): Promise<number> {
 					...(details ? [details] : []),
 					'Tap the button to unwrap it, then have a look at their wish list. And keep it a secret!',
 				],
-				button: { label: 'See who you’re buying for', url: `${SITE}/gifts/groups/${g.id}` },
+				button: { label: 'See who you’re buying for', url: `${APP}/groups/${g.id}` },
 				footer: FOOTER,
 			}),
 		}));
@@ -99,7 +101,7 @@ export async function sendReminders(now = new Date()): Promise<{ exchanges: numb
 								`If you haven’t shopped yet, check who you’re buying for and their wish list${budget ? `. The budget is ${budget}` : ''}.`,
 								'It’s also a good moment to add a few more ideas to your own list.',
 							],
-							button: { label: 'Open the exchange', url: `${SITE}/gifts/groups/${g.id}` },
+							button: { label: 'Open the exchange', url: `${APP}/groups/${g.id}` },
 							footer: FOOTER,
 						}
 					: {
@@ -108,7 +110,7 @@ export async function sendReminders(now = new Date()): Promise<{ exchanges: numb
 								`Hi ${p.name}, ${g.name} is ${when(days)} (${formatDate(g.exchange_date)}), but names haven’t been drawn.`,
 								'Once everyone has joined, open the exchange and tap “Draw names” so people have time to shop.',
 							],
-							button: { label: 'Draw names', url: `${SITE}/gifts/groups/${g.id}#draw` },
+							button: { label: 'Draw names', url: `${APP}/groups/${g.id}#draw` },
 							footer: FOOTER,
 						},
 			),

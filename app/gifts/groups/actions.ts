@@ -3,13 +3,16 @@
 import { redirect } from 'next/navigation';
 import { notifyDrawn } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export async function createGroup(formData: FormData) {
+	const base = await giftsBase();
 	const name = String(formData.get('name') ?? '').trim();
 	const budgetText = String(formData.get('budget') ?? '').trim().replace(/^\$/, '');
 	const date = String(formData.get('exchange_date') ?? '').trim();
 
-	const fail = (error: string) => redirect(`/gifts/new?error=${error}`);
+	const fail = (error: string) => redirect(at(base, `/new?error=${error}`));
 
 	if (name.length < 1 || name.length > 100) fail('name');
 
@@ -33,26 +36,28 @@ export async function createGroup(formData: FormData) {
 		console.error('createGroup failed:', error?.message);
 		fail('save');
 	}
-	redirect(`/gifts/groups/${data!.id}`);
+	redirect(at(base, `/groups/${data!.id}`));
 }
 
 export async function joinGroup(formData: FormData) {
+	const base = await giftsBase();
 	const code = String(formData.get('code') ?? '');
 	const supabase = await createClient();
 	const { data, error } = await supabase.rpc('join_group', { code });
 
 	if (error || !data) {
 		console.error('joinGroup failed:', error?.message);
-		redirect(`/gifts/join/${encodeURIComponent(code)}?error=1`);
+		redirect(at(base, `/join/${encodeURIComponent(code)}?error=1`));
 	}
-	redirect(`/gifts/groups/${data}?joined=1`);
+	redirect(at(base, `/groups/${data}?joined=1`));
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function groupIdFrom(formData: FormData) {
+async function groupIdFrom(formData: FormData) {
+	const base = await giftsBase();
 	const groupId = String(formData.get('group_id') ?? '');
-	if (!UUID.test(groupId)) redirect('/gifts');
+	if (!UUID.test(groupId)) redirect(at(base, '/'));
 	return groupId;
 }
 
@@ -60,10 +65,11 @@ function groupIdFrom(formData: FormData) {
 // these actions just pass the request along and report what happened.
 
 export async function addExclusion(formData: FormData) {
-	const groupId = groupIdFrom(formData);
+	const base = await giftsBase();
+	const groupId = await groupIdFrom(formData);
 	const a = String(formData.get('user_a') ?? '');
 	const b = String(formData.get('user_b') ?? '');
-	const back = (query: string) => redirect(`/gifts/groups/${groupId}?${query}#draw`);
+	const back = (query: string) => redirect(at(base, `/groups/${groupId}?${query}#draw`));
 
 	if (!UUID.test(a) || !UUID.test(b)) back('error=pick');
 	if (a === b) back('error=same');
@@ -79,37 +85,40 @@ export async function addExclusion(formData: FormData) {
 }
 
 export async function removeExclusion(formData: FormData) {
-	const groupId = groupIdFrom(formData);
+	const base = await giftsBase();
+	const groupId = await groupIdFrom(formData);
 	const id = String(formData.get('id') ?? '');
 	const supabase = await createClient();
 	if (UUID.test(id)) {
 		const { error } = await supabase.from('exclusions').delete().eq('id', id).eq('group_id', groupId);
 		if (error) console.error('removeExclusion failed:', error.message);
 	}
-	redirect(`/gifts/groups/${groupId}#draw`);
+	redirect(at(base, `/groups/${groupId}#draw`));
 }
 
 export async function runDraw(formData: FormData) {
-	const groupId = groupIdFrom(formData);
+	const base = await giftsBase();
+	const groupId = await groupIdFrom(formData);
 	const supabase = await createClient();
 	const { error } = await supabase.rpc('run_draw', { gid: groupId });
 	if (error) {
 		console.error('runDraw failed:', error.message);
 		const reason = /No valid draw/.test(error.message) ? 'impossible' : /At least 3/.test(error.message) ? 'few' : 'draw';
-		redirect(`/gifts/groups/${groupId}?error=${reason}#draw`);
+		redirect(at(base, `/groups/${groupId}?error=${reason}#draw`));
 	}
 	// Tell everyone by email (without saying who they got). Skipped if email isn't set up.
 	const emailed = await notifyDrawn(groupId);
-	redirect(`/gifts/groups/${groupId}?notice=${emailed > 0 ? 'drawn_emailed' : 'drawn'}`);
+	redirect(at(base, `/groups/${groupId}?notice=${emailed > 0 ? 'drawn_emailed' : 'drawn'}`));
 }
 
 export async function resetDraw(formData: FormData) {
-	const groupId = groupIdFrom(formData);
+	const base = await giftsBase();
+	const groupId = await groupIdFrom(formData);
 	const supabase = await createClient();
 	const { error } = await supabase.rpc('reset_draw', { gid: groupId });
 	if (error) {
 		console.error('resetDraw failed:', error.message);
-		redirect(`/gifts/groups/${groupId}?error=reset#draw`);
+		redirect(at(base, `/groups/${groupId}?error=reset#draw`));
 	}
-	redirect(`/gifts/groups/${groupId}?notice=reset#draw`);
+	redirect(at(base, `/groups/${groupId}?notice=reset#draw`));
 }

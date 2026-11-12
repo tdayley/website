@@ -5,6 +5,8 @@ import SubmitButton from '@/components/gifts/SubmitButton';
 import { countdown, formatDate } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
 import { signOut, updateDisplayName } from './actions';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'Secret Santa · timdayley',
@@ -20,12 +22,13 @@ type Props = {
 };
 
 export default async function GiftsHome({ searchParams }: Props) {
+	const base = await giftsBase();
 	const params = await searchParams;
 	const supabase = await createClient();
 	const { data } = await supabase.auth.getClaims();
 	const claims = data?.claims;
 	if (!claims?.sub) {
-		redirect('/gifts/login');
+		redirect(at(base, '/login'));
 	}
 
 	const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', claims.sub).maybeSingle();
@@ -66,7 +69,7 @@ export default async function GiftsHome({ searchParams }: Props) {
 					{exchanges.map(({ role, groups: g }) => {
 						const when = [formatDate(g!.exchange_date), countdown(g!.exchange_date)].filter(Boolean).join(' · ');
 						return (
-							<Link className="gx-card gx-card--link exchange-card" href={`/gifts/groups/${g!.id}`} key={g!.id}>
+							<Link className="gx-card gx-card--link exchange-card" href={at(base, `/groups/${g!.id}`)} key={g!.id}>
 								<span className="exchange-icon" aria-hidden="true">🎁</span>
 								<span className="exchange-body">
 									<span className="exchange-name">{g!.name}</span>
@@ -87,11 +90,11 @@ export default async function GiftsHome({ searchParams }: Props) {
 			)}
 
 			<div className="gx-row-actions" style={{ marginTop: 18 }}>
-				<Link className="gx-btn" href="/gifts/new">
+				<Link className="gx-btn" href={at(base, '/new')}>
 					<i aria-hidden="true" className="plus icon"></i>
 					Create an exchange
 				</Link>
-				<Link className="gx-btn gx-btn--ghost" href="/gifts/wishlist">
+				<Link className="gx-btn gx-btn--ghost" href={at(base, '/wishlist')}>
 					<i aria-hidden="true" className="list alternate outline icon"></i>
 					My wish list
 				</Link>

@@ -7,6 +7,8 @@ import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, itemErrors, type WishlistItem } from '@/lib/wishlist';
 import { addItem } from './actions';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'My wish list · Secret Santa',
@@ -17,11 +19,12 @@ type Props = {
 };
 
 export default async function MyWishlist({ searchParams }: Props) {
+	const base = await giftsBase();
 	const params = await searchParams;
 	const supabase = await createClient();
 	const { data: auth } = await supabase.auth.getClaims();
 	const me = auth?.claims?.sub;
-	if (!me) redirect('/gifts/login');
+	if (!me) redirect(at(base, '/login'));
 
 	const { data } = await supabase
 		.from('wishlist_items')
