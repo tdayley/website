@@ -142,6 +142,15 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a'
 update public.groups set name = 'Dayley Family 2026', exchange_date = '2026-12-24';
 select pg_temp.check((select name from public.groups) = 'Dayley Family 2026', 'organizer edits group');
 select pg_temp.denied($$update public.groups set draw_completed_at = now()$$, 'organizer sets draw status directly');
+select pg_temp.denied($$update public.groups set reminder_sent_at = now()$$, 'organizer sets the reminder flag directly');
+reset role;
+update public.groups set reminder_sent_at = now();
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000a',false);
+update public.groups set budget_cents = 7500;
+select pg_temp.check((select budget_cents = 7500 and reminder_sent_at is not null from public.groups), 'organizer changes the budget; reminder flag untouched');
+update public.groups set exchange_date = '2026-12-25';
+select pg_temp.check((select exchange_date = '2026-12-25' and reminder_sent_at is null from public.groups), 'changing the date clears the reminder flag so the new date gets a reminder');
 insert into public.exclusions (group_id, user_a, user_b) values ((select id from g), '00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c');
 select pg_temp.denied($$insert into public.exclusions (group_id, user_a, user_b) values ((select id from g), '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-00000000000b')$$, 'duplicate exclusion in reverse order');
 select pg_temp.denied($$insert into public.exclusions (group_id, user_a, user_b) values ((select id from g), '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000d')$$, 'exclusion with a non-member');
