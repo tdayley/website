@@ -1,7 +1,7 @@
 {
   "name": "Secret Santa",
   "short_name": "Secret Santa",
-  "description": "Family Secret Santa: wish lists and name drawing.",
+  "description": "Secret Santa: wish lists and name drawing.",
   "start_url": "/gifts",
   "scope": "/",
   "display": "standalone",
