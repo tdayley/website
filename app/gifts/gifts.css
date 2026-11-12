@@ -1123,3 +1123,38 @@
   text-align: center;
   padding: 6px 10px 0;
 }
+
+/* ---------- Install app ---------- */
+
+.install-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 14px;
+  background: var(--gold-soft);
+  border-color: #ecd9a4;
+}
+.install-card .install-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+.install-card .install-text {
+  flex: 1;
+  min-width: 180px;
+}
+.gx .install-card .install-text p {
+  margin: 0;
+}
+.gx-dialog .install-steps {
+  margin: 10px 0 14px;
+  padding-left: 1.3em;
+}
+.gx-dialog .install-steps li {
+  margin-bottom: 10px;
+}
+.gx-dialog .share-glyph {
+  width: 20px;
+  height: 20px;
+  vertical-align: -4px;
+  color: var(--evergreen);
+}

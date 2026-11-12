@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import InstallApp from '@/components/gifts/InstallApp';
 import SubmitButton from '@/components/gifts/SubmitButton';
 import { countdown, formatDate } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
@@ -99,6 +100,8 @@ export default async function GiftsHome({ searchParams }: Props) {
 					My wish list
 				</Link>
 			</div>
+
+			<InstallApp />
 
 			<section className="gx-section">
 				<h2 className="gx-h2">Your name</h2>
