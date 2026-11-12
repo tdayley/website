@@ -4,6 +4,7 @@ import '@fontsource-variable/fraunces';
 import '@fontsource-variable/nunito';
 import BrandMark from '@/components/gifts/BrandMark';
 import { GiftsBaseProvider } from '@/components/gifts/GiftsBase';
+import { InstallCapture } from '@/components/gifts/InstallApp';
 import NavLinks from '@/components/gifts/NavLinks';
 import { giftsBase } from '@/lib/gifts-base';
 import { at } from '@/lib/gifts-path';
@@ -37,6 +38,7 @@ export default async function GiftsLayout({ children }: { children: React.ReactN
 
 	return (
 		<GiftsBaseProvider base={base}>
+		<InstallCapture />
 		<div className={`gx${signedIn ? ' gx--tabs' : ''}`}>
 			<header className="gx-top">
 				<Link href={at(base, '/')} className="gx-brand">
