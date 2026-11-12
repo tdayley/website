@@ -13,7 +13,7 @@ export default function NavLinks({ variant }: { variant: 'tabs' | 'top' }) {
 	const pathname = usePathname();
 	if (variant === 'top') {
 		return (
-			<nav className="gx-topnav" aria-label="Gift exchange">
+			<nav className="gx-topnav" aria-label="Secret Santa">
 				{links.map((l) => (
 					<Link key={l.href} href={l.href} className="gx-navlink" aria-current={l.match(pathname) ? 'page' : undefined}>
 						{l.label}
@@ -23,7 +23,7 @@ export default function NavLinks({ variant }: { variant: 'tabs' | 'top' }) {
 		);
 	}
 	return (
-		<nav className="gx-tabs" aria-label="Gift exchange">
+		<nav className="gx-tabs" aria-label="Secret Santa">
 			{links.map((l) => (
 				<Link key={l.href} href={l.href} className="gx-tab" aria-current={l.match(pathname) ? 'page' : undefined}>
 					<i aria-hidden="true" className={`${l.icon} icon`}></i>

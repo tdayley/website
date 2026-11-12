@@ -23,7 +23,7 @@ export default function CopyInviteLink({ code, groupName }: { code: string; grou
 
 	async function share() {
 		try {
-			await navigator.share({ title: groupName, text: `Join our gift exchange, ${groupName}:`, url });
+			await navigator.share({ title: groupName, text: `Join our Secret Santa, ${groupName}:`, url });
 		} catch {
 			// Closed the share sheet without sending; nothing to do.
 		}

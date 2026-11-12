@@ -1,7 +1,7 @@
 {
-  "name": "Gift Exchange",
-  "short_name": "Gifts",
-  "description": "Family gift exchange: wish lists and name drawing.",
+  "name": "Secret Santa",
+  "short_name": "Secret Santa",
+  "description": "Family Secret Santa: wish lists and name drawing.",
   "start_url": "/gifts",
   "scope": "/",
   "display": "standalone",

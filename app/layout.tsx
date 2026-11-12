@@ -8,6 +8,8 @@ export const metadata: Metadata = {
 	metadataBase: new URL('https://www.timdayley.com'),
 	title: 'timdayley',
 	description,
+	// Declared here (not as app/favicon.ico) so the Secret Santa pages can use their own icon instead.
+	icons: { icon: '/favicon.ico' },
 	openGraph: {
 		type: 'website',
 		title: 'timdayley',

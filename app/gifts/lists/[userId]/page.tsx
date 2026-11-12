@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, type WishlistItem } from '@/lib/wishlist';
 
 export const metadata: Metadata = {
-	title: 'Wish list · Gift exchange',
+	title: 'Wish list · Secret Santa',
 };
 
 type Props = {

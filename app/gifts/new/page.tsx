@@ -4,7 +4,7 @@ import SubmitButton from '@/components/gifts/SubmitButton';
 import { createGroup } from '../groups/actions';
 
 export const metadata: Metadata = {
-	title: 'New exchange · Gift exchange',
+	title: 'New exchange · Secret Santa',
 };
 
 const errors: Record<string, string> = {

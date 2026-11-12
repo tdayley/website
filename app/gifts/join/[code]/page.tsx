@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { joinGroup } from '../../groups/actions';
 
 export const metadata: Metadata = {
-	title: 'Join exchange · Gift exchange',
+	title: 'Join exchange · Secret Santa',
 };
 
 type Props = {

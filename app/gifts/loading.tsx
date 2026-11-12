@@ -1,4 +1,4 @@
-// Shown instantly while a gift exchange page loads.
+// Shown instantly while a Secret Santa page loads.
 export default function Loading() {
 	return (
 		<div className="gx-stack" aria-busy="true" aria-label="Loading">

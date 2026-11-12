@@ -9,7 +9,7 @@ import { ITEM_COLUMNS, itemErrors, type WishlistItem } from '@/lib/wishlist';
 import { addItem } from './actions';
 
 export const metadata: Metadata = {
-	title: 'My wish list · Gift exchange',
+	title: 'My wish list · Secret Santa',
 };
 
 type Props = {

@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 import { addExclusion, removeExclusion, resetDraw, runDraw } from '../actions';
 
 export const metadata: Metadata = {
-	title: 'Exchange · Gift exchange',
+	title: 'Exchange · Secret Santa',
 };
 
 type Props = {
