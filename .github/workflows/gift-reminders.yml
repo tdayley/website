@@ -1,4 +1,4 @@
-name: Gift exchange reminders
+name: Secret Santa reminders
 
 # Once a day, asks the site to send any "one week to go" reminder emails.
 # The site decides who is due; each exchange gets its reminder only once.

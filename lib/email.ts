@@ -13,7 +13,7 @@ export function emailConfigured() {
 export async function sendEmails(emails: Email[]): Promise<number> {
 	const key = process.env.RESEND_API_KEY;
 	if (!key || emails.length === 0) return 0;
-	const from = process.env.EMAIL_FROM ?? 'Gift Exchange <gifts@timdayley.com>';
+	const from = process.env.EMAIL_FROM ?? 'Secret Santa <gifts@timdayley.com>';
 	try {
 		// One request for the whole batch (Resend allows up to 100 per request).
 		const response = await fetch(`${API}/emails/batch`, {

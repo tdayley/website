@@ -4,7 +4,7 @@ import { daysUntil, formatDate, formatMoney } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 const SITE = (process.env.SITE_URL ?? 'https://timdayley.com').replace(/\/$/, '');
-const FOOTER = 'You’re getting this because you’re in a gift exchange on timdayley.com.';
+const FOOTER = 'You’re getting this because you’re in a Secret Santa on timdayley.com.';
 
 type Group = { id: string; name: string; budget_cents: number | null; exchange_date: string | null; draw_completed_at: string | null };
 type Person = { id: string; name: string; email: string; organizer: boolean };

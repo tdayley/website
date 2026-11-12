@@ -2,16 +2,22 @@ import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import '@fontsource-variable/fraunces';
 import '@fontsource-variable/nunito';
-import GiftMark from '@/components/gifts/GiftMark';
+import BrandMark from '@/components/gifts/BrandMark';
 import NavLinks from '@/components/gifts/NavLinks';
 import { createClient } from '@/lib/supabase/server';
 import './gifts.css';
 
 export const metadata: Metadata = {
-	title: 'Gift exchange · timdayley',
+	title: 'Secret Santa · timdayley',
 	manifest: '/gifts.webmanifest',
-	appleWebApp: { capable: true, title: 'Gift Exchange', statusBarStyle: 'default' },
-	icons: { apple: '/gifts-icon-180.png' },
+	appleWebApp: { capable: true, title: 'Secret Santa', statusBarStyle: 'default' },
+	icons: {
+		icon: [
+			{ url: '/secret-santa-icon.svg', type: 'image/svg+xml' },
+			{ url: '/secret-santa-icon-32.png', type: 'image/png', sizes: '32x32' },
+		],
+		apple: '/gifts-icon-180.png',
+	},
 };
 
 export const viewport: Viewport = {
@@ -19,7 +25,7 @@ export const viewport: Viewport = {
 	viewportFit: 'cover',
 };
 
-// The shell around every gift exchange page: header, and (when signed in) the two main tabs.
+// The shell around every Secret Santa page: header, and (when signed in) the two main tabs.
 export default async function GiftsLayout({ children }: { children: React.ReactNode }) {
 	const supabase = await createClient();
 	const { data } = await supabase.auth.getClaims();
@@ -29,8 +35,8 @@ export default async function GiftsLayout({ children }: { children: React.ReactN
 		<div className={`gx${signedIn ? ' gx--tabs' : ''}`}>
 			<header className="gx-top">
 				<Link href="/gifts" className="gx-brand">
-					<GiftMark className="gx-brand-mark" />
-					Gift Exchange
+					<BrandMark className="gx-brand-mark" />
+					Secret Santa
 				</Link>
 				{signedIn ? <NavLinks variant="top" /> : null}
 			</header>

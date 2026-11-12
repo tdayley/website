@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import GiftMark from '@/components/gifts/GiftMark';
+import BrandMark from '@/components/gifts/BrandMark';
 import SubmitButton from '@/components/gifts/SubmitButton';
 import { createClient, safeNextPath } from '@/lib/supabase/server';
 import { sendMagicLink } from './actions';
 
 export const metadata: Metadata = {
-	title: 'Sign in · Gift exchange',
+	title: 'Sign in · Secret Santa',
 };
 
 const errors: Record<string, string> = {
@@ -33,8 +33,8 @@ export default async function LoginPage({ searchParams }: Props) {
 	return (
 		<div className="gx-page login-page">
 			<div className="login-hero">
-				<GiftMark className="login-mark" />
-				<h1 className="gx-title">Family gift exchange</h1>
+				<BrandMark className="login-mark" />
+				<h1 className="gx-title">Family Secret Santa</h1>
 				<p className="gx-lead">Wish lists, name drawing, and no spoiled surprises.</p>
 			</div>
 

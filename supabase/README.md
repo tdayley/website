@@ -1,6 +1,6 @@
 # Supabase setup
 
-The gift exchange app (`/gifts`) uses Supabase for Postgres, magic-link login and row-level security.
+The Secret Santa app (`/gifts`) uses Supabase for Postgres, magic-link login and row-level security.
 
 ## Environment variables (Amplify and local `.env.local`)
 
@@ -70,7 +70,7 @@ If any of this isn't set up, the site simply sends nothing. The draw still works
 | `SUPABASE_SECRET_KEY` | Supabase > Project Settings > API Keys > secret key (`sb_secret_...`). **Bypasses the access rules. Never give it a `NEXT_PUBLIC_` name.** Used only to look up members' email addresses. |
 | `RESEND_API_KEY` | A Resend API key with "Sending access" (resend.com > API Keys). |
 | `CRON_SECRET` | Any long random string. The daily reminder job must present it. |
-| `EMAIL_FROM` | Optional. Defaults to `Gift Exchange <gifts@timdayley.com>`; must be an address at the domain verified in Resend. |
+| `EMAIL_FROM` | Optional. Defaults to `Secret Santa <gifts@timdayley.com>`; must be an address at the domain verified in Resend. |
 
 `amplify.yml` copies these into the running site during the build (Amplify doesn't do that
 by itself for server-only variables). After changing them, redeploy.
@@ -87,4 +87,4 @@ by itself for server-only variables). After changing them, redeploy.
 - GitHub pauses scheduled workflows in repositories with no activity for 60 days. If it has
   been quiet since last Christmas, re-enable it under the repo's Actions tab each November
   (the same time you unpause the Supabase project).
-- To test: Actions tab > "Gift exchange reminders" > Run workflow.
+- To test: Actions tab > "Secret Santa reminders" > Run workflow.

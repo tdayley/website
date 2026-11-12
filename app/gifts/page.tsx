@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { signOut, updateDisplayName } from './actions';
 
 export const metadata: Metadata = {
-	title: 'Gift exchange · timdayley',
+	title: 'Secret Santa · timdayley',
 };
 
 type ExchangeRow = {
@@ -41,7 +41,7 @@ export default async function GiftsHome({ searchParams }: Props) {
 	return (
 		<div className="gx-page">
 			<h1 className="gx-title">Hi, {displayName || 'there'}!</h1>
-			<p className="gx-lead">Here&apos;s what&apos;s happening with your gift exchanges.</p>
+			<p className="gx-lead">Here&apos;s what&apos;s happening with your Secret Santa exchanges.</p>
 
 			{params.saved ? (
 				<div className="gx-note gx-note--good" style={{ marginBottom: 18 }}>
