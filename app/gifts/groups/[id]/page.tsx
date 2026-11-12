@@ -33,6 +33,7 @@ const MIN_MEMBERS = 3;
 
 const notices: Record<string, string> = {
 	excluded: 'Added. Those two won’t draw each other.',
+	updated: 'Saved.',
 	drawn: 'Names are drawn! Everyone can now see who they’re buying for.',
 	drawn_emailed: 'Names are drawn! We’ve emailed everyone to come and see who they’re buying for.',
 	reset: 'The draw was undone. Nobody has a name any more; draw again when you’re ready.',
@@ -126,6 +127,15 @@ export default async function GroupPage({ params, searchParams }: Props) {
 						</span>
 					) : null}
 				</div>
+			) : null}
+
+			{isOrganizer ? (
+				<p style={{ marginTop: -8 }}>
+					<Link className="gx-btn gx-btn--ghost gx-btn--small" href={at(base, `/groups/${group.id}/edit`)}>
+						<i aria-hidden="true" className="pencil alternate icon"></i>
+						Edit name, budget or date
+					</Link>
+				</p>
 			) : null}
 
 			<div className="gx-stack">

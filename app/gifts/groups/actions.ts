@@ -6,37 +6,58 @@ import { createClient } from '@/lib/supabase/server';
 import { giftsBase } from '@/lib/gifts-base';
 import { at } from '@/lib/gifts-path';
 
-export async function createGroup(formData: FormData) {
-	const base = await giftsBase();
+type GroupFields = { name: string; budget_cents: number | null; exchange_date: string | null };
+
+// Reads and checks the name / budget / date fields shared by "new exchange" and "edit exchange".
+function parseGroupForm(formData: FormData): { ok: true; values: GroupFields } | { ok: false; error: 'name' | 'budget' | 'date' } {
 	const name = String(formData.get('name') ?? '').trim();
 	const budgetText = String(formData.get('budget') ?? '').trim().replace(/^\$/, '');
 	const date = String(formData.get('exchange_date') ?? '').trim();
 
-	const fail = (error: string) => redirect(at(base, `/new?error=${error}`));
-
-	if (name.length < 1 || name.length > 100) fail('name');
+	if (name.length < 1 || name.length > 100) return { ok: false, error: 'name' };
 
 	let budgetCents: number | null = null;
 	if (budgetText) {
 		const dollars = Number(budgetText);
-		if (!Number.isFinite(dollars) || dollars < 0 || dollars > 100000) fail('budget');
+		if (!Number.isFinite(dollars) || dollars < 0 || dollars > 100000) return { ok: false, error: 'budget' };
 		budgetCents = Math.round(dollars * 100);
 	}
 
-	if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) fail('date');
+	if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)))) return { ok: false, error: 'date' };
+
+	return { ok: true, values: { name, budget_cents: budgetCents, exchange_date: date || null } };
+}
+
+export async function createGroup(formData: FormData) {
+	const base = await giftsBase();
+	const parsed = parseGroupForm(formData);
+	if (!parsed.ok) redirect(at(base, `/new?error=${parsed.error}`));
 
 	const supabase = await createClient();
-	const { data, error } = await supabase
-		.from('groups')
-		.insert({ name, budget_cents: budgetCents, exchange_date: date || null })
-		.select('id')
-		.single();
+	const { data, error } = await supabase.from('groups').insert(parsed.values).select('id').single();
 
 	if (error || !data) {
 		console.error('createGroup failed:', error?.message);
-		fail('save');
+		redirect(at(base, '/new?error=save'));
 	}
-	redirect(at(base, `/groups/${data!.id}`));
+	redirect(at(base, `/groups/${data.id}`));
+}
+
+// Organizer changes the name, budget or date. The database allows only the organizer to do this.
+export async function updateGroup(formData: FormData) {
+	const base = await giftsBase();
+	const groupId = await groupIdFrom(formData);
+	const parsed = parseGroupForm(formData);
+	if (!parsed.ok) redirect(at(base, `/groups/${groupId}/edit?error=${parsed.error}`));
+
+	const supabase = await createClient();
+	const { data, error } = await supabase.from('groups').update(parsed.values).eq('id', groupId).select('id');
+	// No rows back means the access rules refused it (not the organizer).
+	if (error || !data || data.length === 0) {
+		if (error) console.error('updateGroup failed:', error.message);
+		redirect(at(base, `/groups/${groupId}/edit?error=save`));
+	}
+	redirect(at(base, `/groups/${groupId}?notice=updated`));
 }
 
 export async function joinGroup(formData: FormData) {
