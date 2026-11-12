@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: Props) {
 		<div className="gx-page login-page">
 			<div className="login-hero">
 				<BrandMark className="login-mark" />
-				<h1 className="gx-title">Family Secret Santa</h1>
+				<h1 className="gx-title">Secret Santa</h1>
 				<p className="gx-lead">Wish lists, name drawing, and no spoiled surprises.</p>
 			</div>
 
