@@ -7,6 +7,8 @@ import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, itemErrors, type WishlistItem } from '@/lib/wishlist';
 import { updateItem } from '../actions';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'Edit item · Secret Santa',
@@ -18,6 +20,7 @@ type Props = {
 };
 
 export default async function EditItem({ params, searchParams }: Props) {
+	const base = await giftsBase();
 	const { id } = await params;
 	const { error } = await searchParams;
 	if (!UUID.test(id)) notFound();
@@ -25,7 +28,7 @@ export default async function EditItem({ params, searchParams }: Props) {
 	const supabase = await createClient();
 	const { data: auth } = await supabase.auth.getClaims();
 	const me = auth?.claims?.sub;
-	if (!me) redirect('/gifts/login');
+	if (!me) redirect(at(base, '/login'));
 
 	const { data } = await supabase.from('wishlist_items').select(ITEM_COLUMNS).eq('id', id).eq('user_id', me).maybeSingle();
 	if (!data) notFound();
@@ -33,7 +36,7 @@ export default async function EditItem({ params, searchParams }: Props) {
 
 	return (
 		<div className="gx-page">
-			<Link className="gx-back" href="/gifts/wishlist">
+			<Link className="gx-back" href={at(base, '/wishlist')}>
 				<span aria-hidden="true">←</span> My wish list
 			</Link>
 			<h1 className="gx-title">Edit item</h1>
@@ -47,7 +50,7 @@ export default async function EditItem({ params, searchParams }: Props) {
 				<ItemFields item={item} />
 				<div className="gx-row-actions">
 					<SubmitButton>Save</SubmitButton>
-					<Link className="gx-btn gx-btn--ghost" href="/gifts/wishlist">
+					<Link className="gx-btn gx-btn--ghost" href={at(base, '/wishlist')}>
 						Cancel
 					</Link>
 				</div>

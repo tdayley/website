@@ -5,6 +5,8 @@ import ClaimableList, { type Claim } from '@/components/gifts/ClaimableList';
 import { withPhotoUrls } from '@/lib/photos';
 import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, UUID, type WishlistItem } from '@/lib/wishlist';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'Wish list · Secret Santa',
@@ -16,14 +18,15 @@ type Props = {
 
 // Someone else's wish list. The database only returns it if you share an exchange with them.
 export default async function MemberWishlist({ params }: Props) {
+	const base = await giftsBase();
 	const { userId } = await params;
 	if (!UUID.test(userId)) notFound();
 
 	const supabase = await createClient();
 	const { data: auth } = await supabase.auth.getClaims();
 	const me = auth?.claims?.sub;
-	if (!me) redirect('/gifts/login');
-	if (userId === me) redirect('/gifts/wishlist');
+	if (!me) redirect(at(base, '/login'));
+	if (userId === me) redirect(at(base, '/wishlist'));
 
 	const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', userId).maybeSingle();
 	if (!profile) notFound();
@@ -57,7 +60,7 @@ export default async function MemberWishlist({ params }: Props) {
 
 	return (
 		<div className="gx-page">
-			<Link className="gx-back" href="/gifts">
+			<Link className="gx-back" href={at(base, '/')}>
 				<span aria-hidden="true">←</span> Back
 			</Link>
 			<h1 className="gx-title">{profile.display_name}&apos;s wish list</h1>

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SubmitButton from '@/components/gifts/SubmitButton';
 import { createGroup } from '../groups/actions';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 
 export const metadata: Metadata = {
 	title: 'New exchange · Secret Santa',
@@ -19,11 +21,12 @@ type Props = {
 };
 
 export default async function NewGroup({ searchParams }: Props) {
+	const base = await giftsBase();
 	const { error } = await searchParams;
 
 	return (
 		<div className="gx-page">
-			<Link className="gx-back" href="/gifts">
+			<Link className="gx-back" href={at(base, '/')}>
 				<span aria-hidden="true">←</span> Back
 			</Link>
 			<h1 className="gx-title">New exchange</h1>

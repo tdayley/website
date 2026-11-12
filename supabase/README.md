@@ -88,3 +88,35 @@ by itself for server-only variables). After changing them, redeploy.
   been quiet since last Christmas, re-enable it under the repo's Actions tab each November
   (the same time you unpause the Supabase project).
 - To test: Actions tab > "Secret Santa reminders" > Run workflow.
+
+## Running Secret Santa on its own subdomain (gifts.timdayley.com)
+
+The app can live at `gifts.timdayley.com` with short addresses (`/wishlist`, `/groups/...`)
+instead of `timdayley.com/gifts/...`. The pages stay in `app/gifts/`; `proxy.ts` maps the short
+addresses onto them when a request arrives on the host named in `GIFTS_HOST`. With `GIFTS_HOST`
+unset, nothing changes.
+
+Roll it out in two stages, so a problem in stage 1 leaves the current address working.
+
+### Stage 1: turn the subdomain on
+
+1. **Amplify** > Hosting > Custom domains > `timdayley.com` > add subdomain `gifts`, pointing at
+   the `main` branch. Amplify creates the Route 53 record and certificate. Wait for "Available".
+2. **Amplify** > Hosting > Environment variables: add `GIFTS_HOST` = `gifts.timdayley.com`, then
+   redeploy.
+3. Open `https://gifts.timdayley.com`. You should see the Secret Santa sign-in page.
+   - If you see the main homepage instead, the site isn't recognizing the subdomain. Nothing is
+     broken (`timdayley.com/gifts` still works); stop here and investigate.
+4. **Supabase** > Authentication > URL Configuration:
+   - Add `https://gifts.timdayley.com/**` to Redirect URLs.
+   - Change Site URL to `https://gifts.timdayley.com` (the sign-in email's button uses it).
+5. Sign in on `gifts.timdayley.com` and click around. Sign-ins don't carry over between the two
+   addresses, so everyone signs in once on the new one.
+
+### Stage 2: forward the old address
+
+6. **Amplify** environment variables: add `GIFTS_REDIRECT_OLD` = `1`, then redeploy.
+   `timdayley.com/gifts/...` now forwards to `gifts.timdayley.com/...`, so old invite links and
+   bookmarks keep working.
+
+To undo either stage, remove its variable and redeploy.

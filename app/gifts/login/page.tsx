@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import BrandMark from '@/components/gifts/BrandMark';
 import SubmitButton from '@/components/gifts/SubmitButton';
+import { giftsBase } from '@/lib/gifts-base';
+import { at } from '@/lib/gifts-path';
 import { createClient, safeNextPath } from '@/lib/supabase/server';
 import { sendMagicLink } from './actions';
 
@@ -22,7 +24,7 @@ type Props = {
 
 export default async function LoginPage({ searchParams }: Props) {
 	const params = await searchParams;
-	const next = safeNextPath(params.next);
+	const next = safeNextPath(params.next, at(await giftsBase(), '/'));
 
 	const supabase = await createClient();
 	const { data } = await supabase.auth.getClaims();

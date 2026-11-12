@@ -9,7 +9,7 @@ frontend:
         # Amplify doesn't pass environment variables to the running site by itself.
         # Copy the server-only ones into .env.production so Next.js can read them.
         # (NEXT_PUBLIC_ variables don't need this; they're built into the pages.)
-        - env | grep -E '^(SUPABASE_SECRET_KEY|RESEND_API_KEY|CRON_SECRET|EMAIL_FROM|SITE_URL)=' >> .env.production || true
+        - env | grep -E '^(SUPABASE_SECRET_KEY|RESEND_API_KEY|CRON_SECRET|EMAIL_FROM|SITE_URL|GIFTS_HOST|GIFTS_REDIRECT_OLD)=' >> .env.production || true
         - npm run build
   artifacts:
     baseDirectory: .next

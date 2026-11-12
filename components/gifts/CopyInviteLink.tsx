@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
+import { useGiftsPath } from './GiftsBase';
 
 const subscribe = () => () => {};
 
@@ -9,7 +10,8 @@ export default function CopyInviteLink({ code, groupName }: { code: string; grou
 	const origin = useSyncExternalStore(subscribe, () => window.location.origin, () => '');
 	const canShare = useSyncExternalStore(subscribe, () => typeof navigator.share === 'function', () => false);
 	const [copied, setCopied] = useState(false);
-	const url = `${origin}/gifts/join/${code}`;
+	const to = useGiftsPath();
+	const url = `${origin}${to(`/join/${code}`)}`;
 
 	async function copy() {
 		try {

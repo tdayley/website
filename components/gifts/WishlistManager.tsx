@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useLayoutEffect, useOptimistic, useRef, useTransition } from 'react';
 import { moveItem, removeItem } from '@/app/gifts/wishlist/actions';
 import type { WishlistItem } from '@/lib/wishlist';
+import { useGiftsPath } from './GiftsBase';
 import ItemView from './ItemView';
 
 type Change = { type: 'move'; id: string; step: -1 | 1 } | { type: 'remove'; id: string };
@@ -21,6 +22,7 @@ function apply(items: WishlistItem[], change: Change) {
 // Your own wish list. Moving and removing happen on screen straight away, with the
 // cards sliding into their new places, while the change is saved in the background.
 export default function WishlistManager({ items }: { items: WishlistItem[] }) {
+	const to = useGiftsPath();
 	const [shown, change] = useOptimistic(items, apply);
 	const [, startTransition] = useTransition();
 	const nodes = useRef(new Map<string, HTMLLIElement>());
@@ -106,7 +108,7 @@ export default function WishlistManager({ items }: { items: WishlistItem[] }) {
 										<i aria-hidden="true" className="arrow down icon"></i>
 									</button>
 									<span className="spacer" />
-									<Link className="gx-btn gx-btn--ghost gx-btn--small" href={`/gifts/wishlist/${item.id}`} aria-label={`Edit ${item.title}`}>
+									<Link className="gx-btn gx-btn--ghost gx-btn--small" href={to(`/wishlist/${item.id}`)} aria-label={`Edit ${item.title}`}>
 										Edit
 									</Link>
 									<button type="button" className="gx-btn gx-btn--danger gx-btn--small" aria-label={`Remove ${item.title}`} onClick={() => askRemove(item)}>
